@@ -21,6 +21,11 @@ class HttpMethod
     public const TRACE = 'TRACE';
     public const PATCH = 'PATCH';
 
+    public static function isValidMethod(string $method): bool
+    {
+        return \in_array($method, self::getHttpMethods(), true);
+    }
+
     public static function getHttpMethods(): array
     {
         return [

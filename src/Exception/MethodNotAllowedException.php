@@ -13,11 +13,11 @@ class MethodNotAllowedException extends RoutingException
 {
     private $allowedMethods;
 
-    public function __construct(array $allowedMethods)
+    public function __construct($message, array $allowedMethods)
     {
         $this->allowedMethods = $allowedMethods;
 
-        parent::__construct("The requested method is not within list of allowed methods");
+        parent::__construct($message);
     }
 
     public function getAllowedMethods(): array

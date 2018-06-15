@@ -1,0 +1,33 @@
+{
+  "name": "simply/router",
+  "type": "library",
+  "description": "Segment based router for routing web requests",
+  "keywords": [
+    "framework",
+    "router"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Riikka Kalliomäki",
+      "email": "riikka.kalliomaki@gmail.com",
+      "homepage": "http://riimu.net"
+    }
+  ],
+  "require": {
+    "php": "^7.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Simply\\Router\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Simply\\Router\\": "tests/tests/"
+    }
+  }
+}
