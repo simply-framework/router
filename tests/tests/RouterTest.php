@@ -84,6 +84,39 @@ class RouterTest extends TestCase
         $this->assertSame(['GET', 'POST'], $exception->getAllowedMethods());
     }
 
+    public function testPatternRouting()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{param}/path/'],
+            ['test.b', 'GET', '/route/param/{path}/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/foobar/path/', 'test.a', '/route/foobar/path/', ['param' => 'foobar']);
+        $this->assertRoute($router, 'GET' ,'/route/param/foobar/', 'test.b', '/route/param/foobar/', ['path' => 'foobar']);
+    }
+
+    public function testMultipleMatches()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{param}/path/'],
+            ['test.b', 'GET', '/route/param/{path}/'],
+        ]);
+
+        $this->expectException(\UnexpectedValueException::class);
+        $router->route('GET', '/route/param/path/');
+    }
+
+    public function testMultipleParameterSegment()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{paramA}-{paramB}/path/'],
+            ['test.b', 'GET', '/route/start_{paramA}_mid_{paramB}_end/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/foo-bar/path/', 'test.a', '/route/foo-bar/path/', ['paramA' => 'foo', 'paramB' => 'bar']);
+        $this->assertRoute($router, 'GET', '/route/start_foo_mid_bar_end/', 'test.b', '/route/start_foo_mid_bar_end/', ['paramA' => 'foo', 'paramB' => 'bar']);
+    }
+
     private function assertRoute(
         Router $router,
         string $method,
@@ -101,6 +134,8 @@ class RouterTest extends TestCase
         foreach ($expectedParameters as $name => $value) {
             $this->assertSame($value, $route->getParameter($name));
         }
+
+        $this->assertSame($expectedPath, $router->getPath($expectedHandler, $expectedParameters));
     }
 
     private function getRouter(array $routes): Router

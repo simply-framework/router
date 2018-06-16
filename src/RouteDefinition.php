@@ -102,11 +102,11 @@ class RouteDefinition
 
     private function formatPattern(string $segment, array $matches): string
     {
-        $fullPattern = '';
+        $fullPattern = $this->appendPattern('', $segment, 0, $matches[0][0][1]);
 
         foreach ($matches as $i => $match) {
             $name = $match['name'][0];
-            $pattern = $match['pattern'][0];
+            $pattern = $match['pattern'][0] ?? null;
 
             $this->format .= sprintf('{%s}', $name);
 
@@ -122,15 +122,23 @@ class RouteDefinition
 
             $start = $match[0][1] + \strlen($match[0][0]);
             $length = (isset($matches[$i + 1]) ? $matches[$i + 1][0][1] : \strlen($segment)) - $start;
-
-            if ($length > 0) {
-                $constant = substr($segment, $start, $length);
-                $fullPattern .= preg_quote($constant, '#');
-                $this->format .= $constant;
-            }
+            $fullPattern = $this->appendPattern($fullPattern, $segment, $start, $length);
         }
 
+        $this->format .= '/';
+
         return $fullPattern;
+    }
+
+    private function appendPattern(string $pattern, string $segment, int $start, int $length)
+    {
+        if ($length < 1) {
+            return $pattern;
+        }
+
+        $constant = substr($segment, $start, $length);
+        $this->format .= $constant;
+        return $pattern . preg_quote($constant, '#');
     }
 
     private function isValidPattern(string $pattern): bool
