@@ -117,6 +117,36 @@ class RouterTest extends TestCase
         $this->assertRoute($router, 'GET', '/route/start_foo_mid_bar_end/', 'test.b', '/route/start_foo_mid_bar_end/', ['paramA' => 'foo', 'paramB' => 'bar']);
     }
 
+    public function testDefiningSpecificPatterns()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{param:[a-z]+}/path/'],
+            ['test.b', 'GET', '/route/{param:\d+}/path/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/abc/path/', 'test.a', '/route/abc/path/', ['param' => 'abc']);
+        $this->assertRoute($router, 'GET', '/route/123/path/', 'test.b', '/route/123/path/', ['param' => '123']);
+    }
+
+    public function testIncompleteRouteMatch()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{param:\d+}/path/'],
+        ]);
+
+        $this->expectException(RouteNotFoundException::class);
+        $router->route('GET', '/route/123a/path/');
+    }
+
+    public function testCountInPattern()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{param:\d{5}}/path/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/12345/path/', 'test.a', '/route/12345/path/', ['param' => '12345']);
+    }
+
     private function assertRoute(
         Router $router,
         string $method,
@@ -150,6 +180,11 @@ class RouterTest extends TestCase
             $provider->addRouteDefinition(new RouteDefinition($name, $methods, $path, $name));
         }
 
-        return new Router($provider);
+        $code = $provider->getCacheFile();
+        $cachedProvider = eval(substr($code, 6));
+
+        $this->assertSame($code, $cachedProvider->getCacheFile());
+
+        return new Router($cachedProvider);
     }
 }
