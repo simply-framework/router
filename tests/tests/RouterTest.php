@@ -102,7 +102,7 @@ class RouterTest extends TestCase
         }
 
         $this->assertInstanceOf(MethodNotAllowedException::class, $exception);
-        $this->assertSame(['GET', 'POST'], $exception->getAllowedMethods());
+        $this->assertSame(['GET', 'POST', 'HEAD'], $exception->getAllowedMethods());
     }
 
     public function testPatternRouting()

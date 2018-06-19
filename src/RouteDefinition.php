@@ -223,6 +223,11 @@ class RouteDefinition
         return substr($this->format, -1) === '/';
     }
 
+    public function isStatic(): bool
+    {
+        return \count($this->parameterNames) === 0;
+    }
+
     public function matchPatterns(array $segments, & $values): bool
     {
         $parsed = [];

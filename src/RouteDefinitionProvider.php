@@ -10,6 +10,8 @@ namespace Simply\Router;
  */
 class RouteDefinitionProvider
 {
+    protected $staticRoutes = [];
+
     protected $segmentCounts = [];
 
     protected $segmentValues = [];
@@ -29,23 +31,34 @@ class RouteDefinitionProvider
         $id = \count($this->routeDefinitions);
         $segments = $definition->getSegments();
 
-        foreach (array_values($segments) as $i => $segment) {
-            $this->segmentValues[$i][$segment][] = $id;
-        }
-
-        $this->segmentCounts[\count($segments)][] = $id;
-        $this->routesByName[$name] = $id;
         $this->routeDefinitions[$id] = $definition->getDefinitionCache();
+        $this->routesByName[$name] = $id;
+
+        if ($definition->isStatic()) {
+            $this->staticRoutes[implode('/', $segments)][] = $id;
+        } else {
+            foreach (array_values($segments) as $i => $segment) {
+                $this->segmentValues[$i][$segment][] = $id;
+            }
+
+            $this->segmentCounts[\count($segments)][] = $id;
+        }
     }
 
     public function getCacheFile(): string
     {
         return strtr(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'cache_template.php'), [
+            "['STATICS']" => var_export($this->staticRoutes, true),
             "['COUNTS']" => var_export($this->segmentCounts, true),
             "['VALUES']" => var_export($this->segmentValues, true),
             "['DEFINITIONS']" => var_export($this->routeDefinitions, true),
             "['NAMES']" => var_export($this->routesByName, true),
         ]);
+    }
+
+    public function getStaticRoutes(): array
+    {
+        return $this->staticRoutes;
     }
 
     public function getSegmentCounts(): array

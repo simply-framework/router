@@ -50,6 +50,10 @@ class Router
         }
 
         if (\count($this->allowedMethods) > 0) {
+            if (\in_array(HttpMethod::GET, $this->allowedMethods, true)) {
+                $this->allowedMethods[] = HttpMethod::HEAD;
+            }
+
             throw new MethodNotAllowedException(
                 "The requested method '$method' is not within list of allowed methods",
                 array_unique($this->allowedMethods)
@@ -59,13 +63,21 @@ class Router
         throw new RouteNotFoundException("The given path '$path' did not match any defined route");
     }
 
-    private function matchRoutes(string $method, array $segments)
+    private function matchRoutes(string $method, array $segments): array
     {
-        $matchedIds = $this->getMatchingIds($segments);
+        $staticRoutes = $this->provider->getStaticRoutes();
+        $path = implode('/', $segments);
+
+        if (isset($staticRoutes[$path])) {
+            $matchedIds = $staticRoutes[$path];
+        } else {
+            $matchedIds = $this->getIntersectingIds($segments);
+        }
+
         return $this->getMatchingRoutes($matchedIds, $method, $segments);
     }
 
-    private function getMatchingIds(array $segments): array
+    private function getIntersectingIds(array $segments): array
     {
         $count = \count($segments);
         $matched = [];
