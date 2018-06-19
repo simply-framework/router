@@ -35,6 +35,27 @@ class RouterTest extends TestCase
         $this->assertRoute($router, 'GET', '/path/to/route/b/', 'test.b', '/path/to/route/b');
     }
 
+    public function testHeadFallback()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/path/to/route/'],
+        ]);
+
+        $route = $router->route('HEAD', '/path/to/route/');
+        $this->assertSame('test.a', $route->getHandler());
+        $this->assertSame('HEAD', $route->getMethod());
+    }
+
+    public function testArrayHandler()
+    {
+        $router = $this->getRouter([
+            ['test', 'GET', '/test/path/', ['test', 'handler']],
+        ]);
+
+        $route = $router->route('GET', '/test/path/');
+        $this->assertSame(['test', 'handler'], $route->getHandler());
+    }
+
     public function testRoutingInvalidHttpMethod()
     {
         $router = $this->getRouter([]);
@@ -93,6 +114,20 @@ class RouterTest extends TestCase
 
         $this->assertRoute($router, 'GET', '/route/foobar/path/', 'test.a', '/route/foobar/path/', ['param' => 'foobar']);
         $this->assertRoute($router, 'GET' ,'/route/param/foobar/', 'test.b', '/route/param/foobar/', ['path' => 'foobar']);
+    }
+
+    public function testParameterCase()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/route/{Param}/path/'],
+        ]);
+
+        $route = $router->route('GET', '/route/foobar/path');
+
+        $this->assertSame('foobar', $route->getParameter('Param'));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $route->getParameter('param');
     }
 
     public function testMultipleMatches()
@@ -172,12 +207,14 @@ class RouterTest extends TestCase
     {
         $provider = new RouteDefinitionProvider();
 
-        foreach ($routes as [$name, $methods, $path]) {
+        foreach ($routes as $i => [$name, $methods, $path]) {
             if (!\is_array($methods)) {
                 $methods = [$methods];
             }
 
-            $provider->addRouteDefinition(new RouteDefinition($name, $methods, $path, $name));
+            $handler = $routes[$i][3] ?? $name;
+
+            $provider->addRouteDefinition(new RouteDefinition($name, $methods, $path, $handler));
         }
 
         $code = $provider->getCacheFile();

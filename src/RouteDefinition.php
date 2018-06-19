@@ -17,6 +17,7 @@ class RouteDefinition
     private $patterns;
     private $handler;
     private $format;
+    private $parameterNames;
 
     public function __construct(string $name, array $methods, string $path, $handler)
     {
@@ -30,6 +31,7 @@ class RouteDefinition
         $this->patterns = [];
         $this->handler = $handler;
         $this->format = '/';
+        $this->parameterNames = [];
 
         foreach ($methods as $method) {
             $this->addMethod($method);
@@ -91,7 +93,7 @@ class RouteDefinition
 
         if ($count === 0) {
             $this->segments[] = $segment;
-            $this->format .= "$segment/";
+            $this->format .= str_replace('%', '%%', $segment) . '/';
             return;
         }
 
@@ -108,7 +110,13 @@ class RouteDefinition
             $name = $match['name'][0];
             $pattern = $match['pattern'][0] ?? null;
 
-            $this->format .= sprintf('{%s}', $name);
+            $this->format .= '%s';
+
+            if (isset($this->parameterNames[$name])) {
+                throw new \InvalidArgumentException("Duplicate parameter name '$name'");
+            }
+
+            $this->parameterNames[$name] = \count($this->parameterNames);
 
             if ($pattern !== null) {
                 if (!$this->isValidPattern($pattern)) {
@@ -137,7 +145,7 @@ class RouteDefinition
         }
 
         $constant = substr($segment, $start, $length);
-        $this->format .= $constant;
+        $this->format .= str_replace('%', '%%', $constant);
         return $pattern . preg_quote($constant, '#');
     }
 
@@ -161,12 +169,18 @@ class RouteDefinition
     {
         /** @var RouteDefinition $definition */
         $definition = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
-        $definition->name = $cache['name'];
-        $definition->methods = $cache['methods'];
-        $definition->segments = $cache['segments'];
-        $definition->patterns = $cache['patterns'];
-        $definition->handler = $cache['handler'];
-        $definition->format = $cache['format'];
+
+        [
+            $definition->name,
+            $definition->methods,
+            $definition->segments,
+            $definition->patterns,
+            $definition->handler,
+            $definition->format,
+            $definition->parameterNames,
+        ] = $cache;
+
+        $definition->parameterNames = array_flip($definition->parameterNames);
 
         return $definition;
     }
@@ -174,12 +188,13 @@ class RouteDefinition
     public function getDefinitionCache(): array
     {
         return [
-            'name' => $this->name,
-            'methods' => $this->methods,
-            'segments' => $this->segments,
-            'patterns' => $this->patterns,
-            'handler' => $this->handler,
-            'format' => $this->format,
+            $this->name,
+            $this->methods,
+            $this->segments,
+            $this->patterns,
+            $this->handler,
+            $this->format,
+            array_keys($this->parameterNames),
         ];
     }
 
@@ -213,18 +228,19 @@ class RouteDefinition
         $parsed = [];
 
         foreach ($this->patterns as $i => $pattern) {
-            if (!preg_match($pattern, $segments[$i], $matches)) {
+            if (!preg_match($pattern, $segments[$i], $match)) {
                 return false;
             }
 
-            if ($matches[0] !== $segments[$i]) {
+            if ($match[0] !== $segments[$i]) {
                 return false;
             }
 
-            $parsed += array_filter($matches, '\is_string', ARRAY_FILTER_USE_KEY);
+            $parsed += array_intersect_key($match, $this->parameterNames);
         }
 
         $values = $parsed;
+
         return true;
     }
 
@@ -241,26 +257,17 @@ class RouteDefinition
     }
 
     public function formatPath(array $parameters = []) {
-        $path = preg_replace_callback('/\{([a-z0-9_]++)\}/i', function (array $match) use (& $parameters) {
-            $name = $match[1];
+        $values = array_intersect_key($parameters, $this->parameterNames);
 
-            if (!isset($parameters[$name])) {
-                throw new \InvalidArgumentException("Missing route parameter '$name'");
-            }
-
-            $value = $parameters[$name];
-            unset($parameters[$name]);
-
-            return $value;
-        }, $this->format);
-
-        if (!empty($parameters)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Unexpected route paratermers: %s',
-                implode(', ', array_keys($parameters))
-            ));
+        if (\count($values) !== \count($this->parameterNames)) {
+            $missingKeys = array_keys(array_diff_key($this->parameterNames, $values));
+            throw new \InvalidArgumentException('Missing route parameters: ' . implode(', ', $missingKeys));
+        }
+        if (\count($parameters) !== \count($values)) {
+            $extraKeys = array_keys(array_diff_key($parameters, $this->parameterNames));
+            throw new \InvalidArgumentException(sprintf('Unexpected route parameters: %s',implode(', ', $extraKeys)));
         }
 
-        return $path;
+        return vsprintf($this->format, array_values(array_merge($this->parameterNames, $values)));
     }
 }
