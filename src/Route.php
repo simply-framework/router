@@ -1,28 +1,34 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: riimu
- * Date: 15/06/2018
- * Time: 10.12
- */
 
 namespace Simply\Router;
 
-
+/**
+ * Represents a route that has been matched.
+ * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
+ * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ */
 class Route
 {
-    /** @var RouteDefinition The definition for the matched route */
+    /** @var RouteDefinition Definition of for the matched route */
     private $definition;
 
-    /** @var string The requested HTTP method */
+    /** @var string Requested HTTP method*/
     private $method;
 
-    /** @var string[] Actual segments in the requested route */
+    /** @var string[] Segments the requested path */
     private $segments;
 
     /** @var string[] Values for parameters in the requested route */
     private $values;
 
+    /**
+     * Route constructor.
+     * @param RouteDefinition $definition The definition of for the matched route
+     * @param string $method The requested HTTP method
+     * @param string[] $segments The segments the requested path
+     * @param string[] $values The values for parameters in the requested route
+     */
     public function __construct(RouteDefinition $definition, string $method, array $segments, array $values)
     {
         $this->definition = $definition;

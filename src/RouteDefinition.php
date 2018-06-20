@@ -42,7 +42,7 @@ class RouteDefinition
     public function __construct(string $name, array $methods, string $path, $handler)
     {
         if (!$this->isConstantValue($handler)) {
-            throw new \InvalidArgumentException('Invalid route handler, except a constant value');
+            throw new \InvalidArgumentException('Invalid route handler, expected a constant value');
         }
 
         $this->name = $name;
@@ -57,15 +57,13 @@ class RouteDefinition
             $this->addMethod($method);
         }
 
-        $segments = array_filter(explode('/', $path), function (string $segment): bool {
-            return \strlen($segment) > 0;
-        });
+        $segments = preg_split('#/#', $path, -1, PREG_SPLIT_NO_EMPTY);
 
         foreach ($segments as $segment) {
             $this->addSegment($segment);
         }
 
-        if (count($segments) > 0 && substr($path, -1) !== '/') {
+        if (\count($segments) > 0 && substr($path, -1) !== '/') {
             $this->format = substr($this->format, 0, -1);
         }
     }
@@ -297,9 +295,10 @@ class RouteDefinition
             $missingKeys = array_keys(array_diff_key($this->parameterNames, $values));
             throw new \InvalidArgumentException('Missing route parameters: ' . implode(', ', $missingKeys));
         }
+
         if (\count($parameters) !== \count($values)) {
             $extraKeys = array_keys(array_diff_key($parameters, $this->parameterNames));
-            throw new \InvalidArgumentException(sprintf('Unexpected route parameters: %s',implode(', ', $extraKeys)));
+            throw new \InvalidArgumentException('Unexpected route parameters: ' . implode(', ', $extraKeys));
         }
 
         return vsprintf($this->format, array_values(array_merge($this->parameterNames, $values)));

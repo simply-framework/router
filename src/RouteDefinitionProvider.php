@@ -43,11 +43,11 @@ class RouteDefinitionProvider
             $this->staticRoutes[implode('/', $segments)][] = $id;
         } else {
             foreach (array_values($segments) as $i => $segment) {
-                $this->segmentValues[$i][$segment][] = $id;
+                $this->segmentValues[$i][$segment][$id] = true;
             }
 
             $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
-            $this->segmentCounts[\count($segments)][] = $id;
+            $this->segmentCounts[\count($segments)][$id] = true;
         }
     }
 

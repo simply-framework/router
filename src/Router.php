@@ -38,11 +38,9 @@ class Router
             throw new \InvalidArgumentException("Invalid HTTP method '$method'");
         }
 
-        $segments = array_values(array_filter(explode('/', $path), function (string $part): bool {
-            return \strlen($part) > 0;
-        }));
-
         $this->allowedMethods = [];
+
+        $segments = preg_split('#/#', $path, -1, PREG_SPLIT_NO_EMPTY);
         $routes = $this->matchRoutes($method, $segments);
 
         if (\count($routes) === 1) {
@@ -108,16 +106,13 @@ class Router
         }
 
         for ($i = 0; $i < $count; $i++) {
-            $matched[] = array_merge(
-                $segmentValues[$i][$segments[$i]] ?? [],
-                $segmentValues[$i]['#'] ?? []
-            );
+            $matched[] = ($segmentValues[$i][$segments[$i]] ?? []) + ($segmentValues[$i]['#'] ?? []);
         }
 
 
         $matched[] = $segmentCounts[$count];
 
-        return $count > 0 ? array_intersect(... $matched) : $matched[0];
+        return array_keys($count > 0 ? array_intersect_key(... $matched) : $matched[0]);
     }
 
     /**
