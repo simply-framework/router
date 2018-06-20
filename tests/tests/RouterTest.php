@@ -75,6 +75,14 @@ class RouterTest extends TestCase
         $router->route('GET', '/path/to/route/');
     }
 
+    public function testRouteNotFoundOnEmptyRoutes()
+    {
+        $router = $this->getRouter([]);
+
+        $this->expectException(RouteNotFoundException::class);
+        $router->route('GET', '/path/to/route/that/does/not/exist/');
+    }
+
     public function testDifferentMethods()
     {
         $router = $this->getRouter([
@@ -180,6 +188,17 @@ class RouterTest extends TestCase
         ]);
 
         $this->assertRoute($router, 'GET', '/route/12345/path/', 'test.a', '/route/12345/path/', ['param' => '12345']);
+    }
+
+    public function testMixedStaticDynamicRoute()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/path/to/route/'],
+            ['test.b', 'POST', '/path/{param}/route/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/path/to/route/', 'test.a', '/path/to/route/');
+        $this->assertRoute($router, 'POST', '/path/to/route/', 'test.b', '/path/to/route/', ['param' => 'to']);
     }
 
     private function assertRoute(

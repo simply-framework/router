@@ -11,9 +11,15 @@ namespace Simply\Router\Exception;
 
 class MethodNotAllowedException extends RoutingException
 {
+    /** @var string[] List of HTTP request methods that would be allowed */
     private $allowedMethods;
 
-    public function __construct($message, array $allowedMethods)
+    /**
+     * MethodNotAllowedException constructor.
+     * @param string $message The exception message
+     * @param string[] $allowedMethods List of HTTP request methods that are allowed
+     */
+    public function __construct(string $message, array $allowedMethods)
     {
         $this->allowedMethods = $allowedMethods;
 

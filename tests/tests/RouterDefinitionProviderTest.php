@@ -36,4 +36,14 @@ class RouterDefinitionProviderTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $provider->getRouteDefinitionByName('test');
     }
+
+    public function testPackedCountArray()
+    {
+        $provider = new RouteDefinitionProvider();
+
+        $provider->addRouteDefinition(new RouteDefinition('test.a', ['GET'], '/{param}/to/route/', 'handler'));
+        $provider->addRouteDefinition(new RouteDefinition('test.b', ['GET'], '/{param}/', 'handler'));
+
+        $this->assertSame([0, 1, 2, 3], array_keys($provider->getSegmentCounts()));
+    }
 }

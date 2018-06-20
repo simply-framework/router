@@ -11,18 +11,38 @@ namespace Simply\Router;
 
 class RouteDefinition
 {
+    /** @var string The name of the route */
     private $name;
+
+    /** @var string[] Allowed HTTP request method for the route */
     private $methods;
+
+    /** @var string[] The static route segments */
     private $segments;
+
+    /** @var string[] PCRE regular expressions for dynamic route segments */
     private $patterns;
+
+    /** @var mixed The handler for the route */
     private $handler;
+
+    /** @var string The format for generating the route from parameters */
     private $format;
+
+    /** @var int[] Associative array of route parameter names and their ordinal numbers */
     private $parameterNames;
 
+    /**
+     * RouteDefinition constructor.
+     * @param string $name The route name
+     * @param string[] $methods The allowed request methods for the route
+     * @param string $path The path definition for the route
+     * @param mixed $handler The handler for route
+     */
     public function __construct(string $name, array $methods, string $path, $handler)
     {
         if (!$this->isConstantValue($handler)) {
-            throw new \InvalidArgumentException("Invalid route handler, except a constant value");
+            throw new \InvalidArgumentException('Invalid route handler, except a constant value');
         }
 
         $this->name = $name;
@@ -50,6 +70,11 @@ class RouteDefinition
         }
     }
 
+    /**
+     * Tests if the given value is a constant value.
+     * @param mixed $value The value to test
+     * @return bool True if the value is a constant value, false if not
+     */
     private function isConstantValue($value): bool
     {
         if ($value === null || is_scalar($value)) {
@@ -138,7 +163,7 @@ class RouteDefinition
         return $fullPattern;
     }
 
-    private function appendPattern(string $pattern, string $segment, int $start, int $length)
+    private function appendPattern(string $pattern, string $segment, int $start, int $length): string
     {
         if ($length < 1) {
             return $pattern;
@@ -151,15 +176,15 @@ class RouteDefinition
 
     private function isValidPattern(string $pattern): bool
     {
-        $error = false;
-
-        set_error_handler(function () use (& $error) {
-            $error = true;
+        set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
+            throw new \ErrorException($message, 0, $severity, $file, $line);
         }, E_ALL);
 
         try {
             preg_match_all("#$pattern#", '');
-            return $error === false && preg_last_error() === PREG_NO_ERROR;
+            return preg_last_error() === PREG_NO_ERROR;
+        } catch(\ErrorException $exception) {
+            return false;
         } finally {
             restore_error_handler();
         }
@@ -213,6 +238,10 @@ class RouteDefinition
         return $this->segments;
     }
 
+    /**
+     * Returns the route handler.
+     * @return mixed The route handler
+     */
     public function getHandler()
     {
         return $this->handler;
@@ -228,7 +257,7 @@ class RouteDefinition
         return \count($this->parameterNames) === 0;
     }
 
-    public function matchPatterns(array $segments, & $values): bool
+    public function matchPatterns(array $segments, array & $values): bool
     {
         $parsed = [];
 
@@ -249,7 +278,7 @@ class RouteDefinition
         return true;
     }
 
-    public function isMethodAllowed(string $method) {
+    public function isMethodAllowed(string $method): bool {
         if (\in_array($method, $this->methods, true)) {
             return true;
         }
@@ -261,7 +290,7 @@ class RouteDefinition
         return false;
     }
 
-    public function formatPath(array $parameters = []) {
+    public function formatPath(array $parameters = []): string {
         $values = array_intersect_key($parameters, $this->parameterNames);
 
         if (\count($values) !== \count($this->parameterNames)) {

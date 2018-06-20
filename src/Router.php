@@ -13,12 +13,16 @@ use Simply\Router\Exception\RouteNotFoundException;
  */
 class Router
 {
+    /** @var RouteDefinitionProvider The route definition provider */
     private $provider;
+
+    /** @var string[] List of methods that would be allowed for the routed path */
     private $allowedMethods;
 
     public function __construct(RouteDefinitionProvider $provider)
     {
         $this->provider = $provider;
+        $this->allowedMethods = [];
     }
 
     /**
@@ -34,7 +38,7 @@ class Router
             throw new \InvalidArgumentException("Invalid HTTP method '$method'");
         }
 
-        $segments = array_values(array_filter(explode('/', $path), function (string $part): string {
+        $segments = array_values(array_filter(explode('/', $path), function (string $part): bool {
             return \strlen($part) > 0;
         }));
 
@@ -63,29 +67,45 @@ class Router
         throw new RouteNotFoundException("The given path '$path' did not match any defined route");
     }
 
+    /**
+     * Returns routes that match the given HTTP request method and path segments.
+     * @param string $method The HTTP request method
+     * @param string[] $segments The path segments
+     * @return Route[] List of matching routes
+     */
     private function matchRoutes(string $method, array $segments): array
     {
         $staticRoutes = $this->provider->getStaticRoutes();
         $path = implode('/', $segments);
 
         if (isset($staticRoutes[$path])) {
-            $matchedIds = $staticRoutes[$path];
-        } else {
-            $matchedIds = $this->getIntersectingIds($segments);
+            $routes = $this->getMatchingRoutes($staticRoutes[$path], $method, $segments);
+
+            if ($routes) {
+                return $routes;
+            }
         }
 
+        $matchedIds = $this->getIntersectingIds($segments);
         return $this->getMatchingRoutes($matchedIds, $method, $segments);
     }
 
+    /**
+     * Returns a list of route ids for routes that have matching static path segments.
+     * @param string[] $segments The routed path segments
+     * @return int[] List of route ids for routes that have matching static path segments
+     */
     private function getIntersectingIds(array $segments): array
     {
         $count = \count($segments);
         $matched = [];
 
         $segmentCounts = $this->provider->getSegmentCounts();
-        $matched[] = $segmentCounts[$count] ?? [];
-
         $segmentValues = $this->provider->getSegmentValues();
+
+        if (empty($segmentCounts[$count])) {
+            return [];
+        }
 
         for ($i = 0; $i < $count; $i++) {
             $matched[] = array_merge(
@@ -94,15 +114,26 @@ class Router
             );
         }
 
+
+        $matched[] = $segmentCounts[$count];
+
         return $count > 0 ? array_intersect(... $matched) : $matched[0];
     }
 
+    /**
+     * Returns the routes from given ids the match the requested method and segments.
+     * @param int[] $ids The route ids to match
+     * @param string $method The request HTTP method
+     * @param string[] $segments The request path segments
+     * @return Route[] The matched routes
+     */
     private function getMatchingRoutes(array $ids, string $method, array $segments): array
     {
         $routes = [];
 
         foreach ($ids as $id) {
             $definition = $this->provider->getRouteDefinition($id);
+            $values = [];
 
             if (!$definition->matchPatterns($segments, $values)) {
                 continue;

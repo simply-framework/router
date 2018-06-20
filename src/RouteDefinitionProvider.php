@@ -10,17 +10,22 @@ namespace Simply\Router;
  */
 class RouteDefinitionProvider
 {
+    /** @var array<string,int[]> List of static paths to route */
     protected $staticRoutes = [];
 
+    /** @var array<int,int[]> List of routes per number of segments  */
     protected $segmentCounts = [];
 
+    /** @var array<int,array<string,int[]>> List of routes by each segment */
     protected $segmentValues = [];
 
+    /** @var array[] Cache of all route definitions */
     protected $routeDefinitions = [];
 
+    /** @var array<string,int> List of routes by their name */
     protected $routesByName = [];
 
-    public function addRouteDefinition(RouteDefinition $definition)
+    public function addRouteDefinition(RouteDefinition $definition): void
     {
         $name = $definition->getName();
 
@@ -41,13 +46,24 @@ class RouteDefinitionProvider
                 $this->segmentValues[$i][$segment][] = $id;
             }
 
+            $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
             $this->segmentCounts[\count($segments)][] = $id;
         }
     }
 
     public function getCacheFile(): string
     {
-        return strtr(file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'cache_template.php'), [
+        $template = <<<'TEMPLATE'
+<?php return new class extends \Simply\Router\RouteDefinitionProvider {
+    protected $staticRoutes = ['STATICS'];
+    protected $segmentCounts = ['COUNTS'];
+    protected $segmentValues = ['VALUES'];
+    protected $routeDefinitions = ['DEFINITIONS'];
+    protected $routesByName = ['NAMES'];
+};
+TEMPLATE;
+
+        return strtr($template, [
             "['STATICS']" => var_export($this->staticRoutes, true),
             "['COUNTS']" => var_export($this->segmentCounts, true),
             "['VALUES']" => var_export($this->segmentValues, true),
@@ -56,16 +72,28 @@ class RouteDefinitionProvider
         ]);
     }
 
+    /**
+     * Returns list of routes per static path.
+     * @return array<string,int[]> List of routes per static path
+     */
     public function getStaticRoutes(): array
     {
         return $this->staticRoutes;
     }
 
+    /**
+     * Returns list of routes per number of segments.
+     * @return array<int,int[]> List of routes per number of segments
+     */
     public function getSegmentCounts(): array
     {
         return $this->segmentCounts;
     }
 
+    /**
+     * Returns routes per value of each segment.
+     * @return array<int,array<string,int[]>> Routes per value of each segment
+     */
     public function getSegmentValues(): array
     {
         return $this->segmentValues;

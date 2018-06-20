@@ -11,9 +11,16 @@ namespace Simply\Router;
 
 class Route
 {
+    /** @var RouteDefinition The definition for the matched route */
     private $definition;
+
+    /** @var string The requested HTTP method */
     private $method;
+
+    /** @var string[] Actual segments in the requested route */
     private $segments;
+
+    /** @var string[] Values for parameters in the requested route */
     private $values;
 
     public function __construct(RouteDefinition $definition, string $method, array $segments, array $values)
@@ -24,17 +31,21 @@ class Route
         $this->values = $values;
     }
 
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
 
+    /**
+     * Returns the handler for the requested route
+     * @return mixed
+     */
     public function getHandler()
     {
         return $this->definition->getHandler();
     }
 
-    public function getPath()
+    public function getPath(): string
     {
         if (\count($this->segments) === 0) {
             return '/';
