@@ -121,7 +121,7 @@ class RouterTest extends TestCase
         ]);
 
         $this->assertRoute($router, 'GET', '/route/foobar/path/', 'test.a', '/route/foobar/path/', ['param' => 'foobar']);
-        $this->assertRoute($router, 'GET' ,'/route/param/foobar/', 'test.b', '/route/param/foobar/', ['path' => 'foobar']);
+        $this->assertRoute($router, 'GET', '/route/param/foobar/', 'test.b', '/route/param/foobar/', ['path' => 'foobar']);
     }
 
     public function testParameterCase()

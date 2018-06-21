@@ -213,7 +213,7 @@ class RouteDefinition
         try {
             $result = preg_match("/$pattern/", '');
             return $result !== false && preg_last_error() === PREG_NO_ERROR;
-        } catch(\ErrorException $exception) {
+        } catch (\ErrorException $exception) {
             $errorMessage = sprintf("Invalid regular expression '%s': %s", $pattern, $exception->getMessage());
             throw new \InvalidArgumentException($errorMessage, 0, $exception);
         } finally {
@@ -349,7 +349,8 @@ class RouteDefinition
      * @param string $method The HTTP request method to test
      * @return bool True if the given HTTP request method is allowed, false if not
      */
-    public function isMethodAllowed(string $method): bool {
+    public function isMethodAllowed(string $method): bool
+    {
         if (\in_array($method, $this->methods, true)) {
             return true;
         }
@@ -366,7 +367,8 @@ class RouteDefinition
      * @param array<string,string> $parameters Values for the route parameters
      * @return string The encoded URL for the route
      */
-    public function formatUrl(array $parameters = []): string {
+    public function formatUrl(array $parameters = []): string
+    {
         $values = [];
 
         foreach (array_keys($this->parameterNames) as $name) {

@@ -65,7 +65,7 @@ class Route
             return '/';
         }
 
-        $path = sprintf('/%s/',  implode('/', $this->segments));
+        $path = sprintf('/%s/', implode('/', $this->segments));
 
         if (!$this->definition->hasSlash()) {
             $path = substr($path, 0, -1);
