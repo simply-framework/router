@@ -13,7 +13,7 @@ class RouteDefinitionProvider
     /** @var array<string,int[]> List of static paths to route */
     protected $staticRoutes = [];
 
-    /** @var array<int,int[]> List of routes per number of segments  */
+    /** @var array<int,int[]> List of routes per number of segments */
     protected $segmentCounts = [];
 
     /** @var array<int,array<string,array<int,true>>> List of routes by each segment */

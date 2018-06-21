@@ -114,7 +114,6 @@ class Router
             $matched[] = ($segmentValues[$i][$segments[$i]] ?? []) + ($segmentValues[$i]['#'] ?? []);
         }
 
-
         $matched[] = $segmentCounts[$count];
 
         return array_keys($count > 0 ? array_intersect_key(... $matched) : $matched[0]);

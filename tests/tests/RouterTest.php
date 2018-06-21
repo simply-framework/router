@@ -17,7 +17,7 @@ class RouterTest extends TestCase
     public function testRoutingEmptyPath()
     {
         $router = $this->getRouter([
-            ['test.route', 'GET', '/']
+            ['test.route', 'GET', '/'],
         ]);
 
         $this->assertRoute($router, 'GET', '/', 'test.route', '/');

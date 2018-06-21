@@ -76,7 +76,7 @@ class Route
 
     /**
      * Returns the encoded URL for the requested route.
-     * @return string The encoded URL for the requested route.
+     * @return string The encoded URL for the requested route
      */
     public function getUrl(): string
     {
