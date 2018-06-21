@@ -30,16 +30,16 @@ class RouteDefinitionTest extends TestCase
         new RouteDefinition('test', ['NOT_HTTP_METHOD'], '/', 'foobar');
     }
 
-    public function testInvalidSegmentCharacter()
-    {
-        $this->expectException(\InvalidArgumentException::class);
-        new RouteDefinition('test', ['GET'], '/path/#/', 'foobar');
-    }
-
     public function testInvalidRegularExpression()
     {
         $this->expectException(\InvalidArgumentException::class);
         new RouteDefinition('test', ['GET'], '/path/{param:\d[1-0]}/', 'foobar');
+    }
+
+    public function testFailingRegularExpression()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new RouteDefinition('test', ['GET'], '/path/{param:((?2))((?1))}/path/', 'foobar');
     }
 
     public function testDuplicateParameterName()
@@ -53,7 +53,7 @@ class RouteDefinitionTest extends TestCase
         $definition = new RouteDefinition('test', ['GET'], '/path/{param}/route/', 'foobar');
 
         $this->expectException(\InvalidArgumentException::class);
-        $definition->formatPath([]);
+        $definition->formatUrl([]);
     }
 
     public function testExtraRouteParameter()
@@ -61,6 +61,6 @@ class RouteDefinitionTest extends TestCase
         $definition = new RouteDefinition('test', ['GET'], '/path/{param}/route/', 'foobar');
 
         $this->expectException(\InvalidArgumentException::class);
-        $definition->formatPath(['param' => 'foo', 'other' => 'bar']);
+        $definition->formatUrl(['param' => 'foo', 'other' => 'bar']);
     }
 }

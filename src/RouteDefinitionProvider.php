@@ -3,7 +3,7 @@
 namespace Simply\Router;
 
 /**
- * RouteDefinitionProvider.
+ * Provides route definitions and matching arrays for the router.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2018 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -16,7 +16,7 @@ class RouteDefinitionProvider
     /** @var array<int,int[]> List of routes per number of segments  */
     protected $segmentCounts = [];
 
-    /** @var array<int,array<string,int[]>> List of routes by each segment */
+    /** @var array<int,array<string,array<int,true>>> List of routes by each segment */
     protected $segmentValues = [];
 
     /** @var array[] Cache of all route definitions */
@@ -25,6 +25,10 @@ class RouteDefinitionProvider
     /** @var array<string,int> List of routes by their name */
     protected $routesByName = [];
 
+    /**
+     * Adds a new route definition.
+     * @param RouteDefinition $definition A new route definition to add
+     */
     public function addRouteDefinition(RouteDefinition $definition): void
     {
         $name = $definition->getName();
@@ -51,6 +55,10 @@ class RouteDefinitionProvider
         }
     }
 
+    /**
+     * Returns PHP code for cached RouteDefinitionProvider that can be stored in file and included.
+     * @return string PHP code for cached RouteDefinitionProvider
+     */
     public function getCacheFile(): string
     {
         $template = <<<'TEMPLATE'
@@ -92,13 +100,18 @@ TEMPLATE;
 
     /**
      * Returns routes per value of each segment.
-     * @return array<int,array<string,int[]>> Routes per value of each segment
+     * @return array<int,array<string,array<int,true>>> Routes per value of each segment
      */
     public function getSegmentValues(): array
     {
         return $this->segmentValues;
     }
 
+    /**
+     * Returns a route definition by a specific id.
+     * @param int $id Id of the route definition
+     * @return RouteDefinition The route definition for the specific id
+     */
     public function getRouteDefinition(int $id): RouteDefinition
     {
         if (!isset($this->routeDefinitions[$id])) {
@@ -108,6 +121,11 @@ TEMPLATE;
         return RouteDefinition::createFromCache($this->routeDefinitions[$id]);
     }
 
+    /**
+     * Returns a route definition by the name of the route.
+     * @param string $name The name of the route
+     * @return RouteDefinition The route definition with the given name
+     */
     public function getRouteDefinitionByName(string $name): RouteDefinition
     {
         if (!isset($this->routesByName[$name])) {

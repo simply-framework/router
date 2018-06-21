@@ -6,7 +6,7 @@ use Simply\Router\Exception\MethodNotAllowedException;
 use Simply\Router\Exception\RouteNotFoundException;
 
 /**
- * Router.
+ * Class for routing requested methods and paths to specific routes.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2018 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -19,6 +19,10 @@ class Router
     /** @var string[] List of methods that would be allowed for the routed path */
     private $allowedMethods;
 
+    /**
+     * Router constructor.
+     * @param RouteDefinitionProvider $provider The route definition provider
+     */
     public function __construct(RouteDefinitionProvider $provider)
     {
         $this->provider = $provider;
@@ -26,11 +30,12 @@ class Router
     }
 
     /**
-     * @param string $method
-     * @param string $path
-     * @return Route
-     * @throws MethodNotAllowedException
-     * @throws RouteNotFoundException
+     * Routes the given path with the given HTTP request method to a specific route.
+     * @param string $method The HTTP request method
+     * @param string $path The decoded request path
+     * @return Route Matching route
+     * @throws MethodNotAllowedException If the path matches at least one route, but the method is not allowed
+     * @throws RouteNotFoundException If no route matches the given path
      */
     public function route(string $method, string $path): Route
     {
@@ -68,7 +73,7 @@ class Router
     /**
      * Returns routes that match the given HTTP request method and path segments.
      * @param string $method The HTTP request method
-     * @param string[] $segments The path segments
+     * @param string[] $segments The requested path segments
      * @return Route[] List of matching routes
      */
     private function matchRoutes(string $method, array $segments): array
@@ -90,7 +95,7 @@ class Router
 
     /**
      * Returns a list of route ids for routes that have matching static path segments.
-     * @param string[] $segments The routed path segments
+     * @param string[] $segments The requested path segments
      * @return int[] List of route ids for routes that have matching static path segments
      */
     private function getIntersectingIds(array $segments): array
@@ -116,11 +121,11 @@ class Router
     }
 
     /**
-     * Returns the routes from given ids the match the requested method and segments.
-     * @param int[] $ids The route ids to match
-     * @param string $method The request HTTP method
-     * @param string[] $segments The request path segments
-     * @return Route[] The matched routes
+     * Returns the routes for the given ids that match the requested method and segments.
+     * @param int[] $ids List of route ids to match
+     * @param string $method The HTTP request method
+     * @param string[] $segments The requested path segments
+     * @return Route[] List of matching routes
      */
     private function getMatchingRoutes(array $ids, string $method, array $segments): array
     {
@@ -145,9 +150,15 @@ class Router
         return $routes;
     }
 
-    public function getPath(string $name, array $parameters = []): string
+    /**
+     * Returns the encoded URL for the route with the given name.
+     * @param string $name Name of the route
+     * @param string[] $parameters Values for the route parameters
+     * @return string The encoded URL for the route
+     */
+    public function generateUrl(string $name, array $parameters = []): string
     {
         $definition = $this->provider->getRouteDefinitionByName($name);
-        return $definition->formatPath($parameters);
+        return $definition->formatUrl($parameters);
     }
 }

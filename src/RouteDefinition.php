@@ -1,20 +1,19 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: riimu
- * Date: 14/06/2018
- * Time: 15.07
- */
 
 namespace Simply\Router;
 
-
+/**
+ * Definitions for a specific route.
+ * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
+ * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ */
 class RouteDefinition
 {
     /** @var string The name of the route */
     private $name;
 
-    /** @var string[] Allowed HTTP request method for the route */
+    /** @var string[] Allowed HTTP request methods for the route */
     private $methods;
 
     /** @var string[] The static route segments */
@@ -26,18 +25,18 @@ class RouteDefinition
     /** @var mixed The handler for the route */
     private $handler;
 
-    /** @var string The format for generating the route from parameters */
+    /** @var string The format for generating the route URL from parameters */
     private $format;
 
-    /** @var int[] Associative array of route parameter names and their ordinal numbers */
+    /** @var array<string,int> Associative array of route parameter names and their ordinal numbers */
     private $parameterNames;
 
     /**
      * RouteDefinition constructor.
-     * @param string $name The route name
-     * @param string[] $methods The allowed request methods for the route
-     * @param string $path The path definition for the route
-     * @param mixed $handler The handler for route
+     * @param string $name Name of the route
+     * @param string[] $methods Allowed HTTP request methods for the route
+     * @param string $path Path definition for the route
+     * @param mixed $handler Handler for route
      */
     public function __construct(string $name, array $methods, string $path, $handler)
     {
@@ -92,6 +91,10 @@ class RouteDefinition
         return false;
     }
 
+    /**
+     * Adds a method to the list of allowed HTTP request methods.
+     * @param string $method The HTTP request method to add
+     */
     private function addMethod(string $method): void
     {
         if (!HttpMethod::isValidMethod($method)) {
@@ -101,12 +104,12 @@ class RouteDefinition
         $this->methods[] = $method;
     }
 
+    /**
+     * Appends a path segment to the list of matched path segments for the route.
+     * @param string $segment The segment to add
+     */
     private function addSegment(string $segment): void
     {
-        if (strpos($segment, '#') !== false) {
-            throw new \InvalidArgumentException("Invalid character '#' in route definition path");
-        }
-
         $count = preg_match_all(
             "/\{(?'name'[a-z0-9_]++)(?::(?'pattern'(?:[^{}]++|\{(?&pattern)\})++))?\}/i",
             $segment,
@@ -116,15 +119,21 @@ class RouteDefinition
 
         if ($count === 0) {
             $this->segments[] = $segment;
-            $this->format .= str_replace('%', '%%', $segment) . '/';
+            $this->format .= $this->formatEncode($segment) . '/';
             return;
         }
 
         $pattern = $this->formatPattern($segment, $matches);
-        $this->patterns[\count($this->segments)] = sprintf('#%s#', $pattern);
+        $this->patterns[\count($this->segments)] = sprintf('/%s/', $pattern);
         $this->segments[] = '#';
     }
 
+    /**
+     * Creates a dynamic segment regular expression based on the provided segment.
+     * @param string $segment The segment to turn into regular expression
+     * @param array $matches List of matches for the dynamic parts
+     * @return string The fully formed regular expression for the segment
+     */
     private function formatPattern(string $segment, array $matches): string
     {
         $fullPattern = $this->appendPattern('', $segment, 0, $matches[0][0][1]);
@@ -143,7 +152,7 @@ class RouteDefinition
 
             if ($pattern !== null) {
                 if (!$this->isValidPattern($pattern)) {
-                    throw new \InvalidArgumentException("Error compiling pattern '$pattern'");
+                    throw new \InvalidArgumentException("Invalid regular expression '$pattern'");
                 }
 
                 $fullPattern .= sprintf("(?'%s'%s)", $name, $pattern);
@@ -161,6 +170,14 @@ class RouteDefinition
         return $fullPattern;
     }
 
+    /**
+     * Appends a static section to the pattern from the given segment.
+     * @param string $pattern The pattern to append
+     * @param string $segment The full segment to copy
+     * @param int $start The start of the static section
+     * @param int $length The length of the static section
+     * @return string The pattern with the static section appended
+     */
     private function appendPattern(string $pattern, string $segment, int $start, int $length): string
     {
         if ($length < 1) {
@@ -168,10 +185,25 @@ class RouteDefinition
         }
 
         $constant = substr($segment, $start, $length);
-        $this->format .= str_replace('%', '%%', $constant);
-        return $pattern . preg_quote($constant, '#');
+        $this->format .= $this->formatEncode($constant);
+        return $pattern . preg_quote($constant, '/');
     }
 
+    /**
+     * URL encodes a string to be part of the URL format string.
+     * @param string $part The part to encode
+     * @return string The encoded part
+     */
+    private function formatEncode(string $part): string
+    {
+        return str_replace('%', '%%', rawurlencode($part));
+    }
+
+    /**
+     * Tells if the given string is a valid regular expression without delimiters.
+     * @param string $pattern The string to test
+     * @return bool True if it is a valid PCRE regular expression, false if not
+     */
     private function isValidPattern(string $pattern): bool
     {
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
@@ -179,15 +211,21 @@ class RouteDefinition
         }, E_ALL);
 
         try {
-            preg_match_all("#$pattern#", '');
-            return preg_last_error() === PREG_NO_ERROR;
+            $result = preg_match("/$pattern/", '');
+            return $result !== false && preg_last_error() === PREG_NO_ERROR;
         } catch(\ErrorException $exception) {
-            return false;
+            $errorMessage = sprintf("Invalid regular expression '%s': %s", $pattern, $exception->getMessage());
+            throw new \InvalidArgumentException($errorMessage, 0, $exception);
         } finally {
             restore_error_handler();
         }
     }
 
+    /**
+     * Returns a new RouteDefinition instance based on the cached values.
+     * @param array $cache The cached RouteDefinition values
+     * @return RouteDefinition A new RouteDefinition instance
+     */
     public static function createFromCache(array $cache): RouteDefinition
     {
         /** @var RouteDefinition $definition */
@@ -208,6 +246,10 @@ class RouteDefinition
         return $definition;
     }
 
+    /**
+     * Returns cached values for the RouteDefinition that can be used to instantiate a new RouteDefinition.
+     * @return array RouteDefinition cache values
+     */
     public function getDefinitionCache(): array
     {
         return [
@@ -221,16 +263,28 @@ class RouteDefinition
         ];
     }
 
+    /**
+     * Returns the name of the route.
+     * @return string The name of the route
+     */
     public function getName(): string
     {
         return $this->name;
     }
 
+    /**
+     * Returns the allowed methods for the route.
+     * @return string[] The allowed methods for the route
+     */
     public function getMethods(): array
     {
         return $this->methods;
     }
 
+    /**
+     * Returns the static segments for the route.
+     * @return string[] The static segments for the route
+     */
     public function getSegments(): array
     {
         return $this->segments;
@@ -245,16 +299,30 @@ class RouteDefinition
         return $this->handler;
     }
 
+    /**
+     * Tells if the canonical route path ends in a forward slash or not.
+     * @return bool True if the path ends in a slash, false if not
+     */
     public function hasSlash(): bool
     {
         return substr($this->format, -1) === '/';
     }
 
+    /**
+     * Tells if the path is completely static without any dynamic segments.
+     * @return bool True if the path is static, false if not
+     */
     public function isStatic(): bool
     {
         return \count($this->parameterNames) === 0;
     }
 
+    /**
+     * Matches the given segments against the dynamic path segments.
+     * @param string[] $segments The segments to match against
+     * @param array $values Array that will be populated with route parameter values on match
+     * @return bool True if the dynamic segments match, false if not
+     */
     public function matchPatterns(array $segments, array & $values): bool
     {
         $parsed = [];
@@ -276,6 +344,11 @@ class RouteDefinition
         return true;
     }
 
+    /**
+     * Tells if the given HTTP request method is allowed by the route.
+     * @param string $method The HTTP request method to test
+     * @return bool True if the given HTTP request method is allowed, false if not
+     */
     public function isMethodAllowed(string $method): bool {
         if (\in_array($method, $this->methods, true)) {
             return true;
@@ -288,19 +361,29 @@ class RouteDefinition
         return false;
     }
 
-    public function formatPath(array $parameters = []): string {
-        $values = array_intersect_key($parameters, $this->parameterNames);
+    /**
+     * Returns an encoded URL for the route based with the given parameter values.
+     * @param array<string,string> $parameters Values for the route parameters
+     * @return string The encoded URL for the route
+     */
+    public function formatUrl(array $parameters = []): string {
+        $values = [];
 
-        if (\count($values) !== \count($this->parameterNames)) {
-            $missingKeys = array_keys(array_diff_key($this->parameterNames, $values));
-            throw new \InvalidArgumentException('Missing route parameters: ' . implode(', ', $missingKeys));
+        foreach (array_keys($this->parameterNames) as $name) {
+            if (!isset($parameters[$name])) {
+                throw new \InvalidArgumentException("Missing route parameter '$name'");
+            }
+
+            $values[] = rawurlencode($parameters[$name]);
+            unset($parameters[$name]);
         }
 
-        if (\count($parameters) !== \count($values)) {
-            $extraKeys = array_keys(array_diff_key($parameters, $this->parameterNames));
-            throw new \InvalidArgumentException('Unexpected route parameters: ' . implode(', ', $extraKeys));
+        if ($parameters) {
+            throw new \InvalidArgumentException(
+                'Unexpected route parameters: ' . implode(', ', array_keys($parameters))
+            );
         }
 
-        return vsprintf($this->format, array_values(array_merge($this->parameterNames, $values)));
+        return vsprintf($this->format, $values);
     }
 }

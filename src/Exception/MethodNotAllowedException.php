@@ -1,14 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: riimu
- * Date: 14/06/2018
- * Time: 15.39
- */
 
 namespace Simply\Router\Exception;
 
-
+/**
+ * Exception that is thrown when the path matches, but the HTTP request method does not match any known route.
+ * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
+ * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @license http://opensource.org/licenses/mit-license.php MIT License
+ */
 class MethodNotAllowedException extends RoutingException
 {
     /** @var string[] List of HTTP request methods that would be allowed */
@@ -26,6 +25,10 @@ class MethodNotAllowedException extends RoutingException
         parent::__construct($message);
     }
 
+    /**
+     * Returns a list of allowed HTTP request methods.
+     * @return string[] List of allowed HTTP request methods
+     */
     public function getAllowedMethods(): array
     {
         return $this->allowedMethods;

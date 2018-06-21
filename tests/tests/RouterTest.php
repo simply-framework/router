@@ -201,6 +201,15 @@ class RouterTest extends TestCase
         $this->assertRoute($router, 'POST', '/path/to/route/', 'test.b', '/path/to/route/', ['param' => 'to']);
     }
 
+    public function testRoutingWithEncodedCharacter()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/path/encoded path/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/path/encoded path/', 'test.a', '/path/encoded path/');
+    }
+
     private function assertRoute(
         Router $router,
         string $method,
@@ -219,7 +228,12 @@ class RouterTest extends TestCase
             $this->assertSame($value, $route->getParameter($name));
         }
 
-        $this->assertSame($expectedPath, $router->getPath($expectedHandler, $expectedParameters));
+        $encodedPath = implode('/', array_map(function (string $value): string {
+            return rawurlencode($value);
+        }, explode('/', $expectedPath)));
+
+        $this->assertSame($encodedPath, $route->getUrl());
+        $this->assertSame($encodedPath, $router->generateUrl($expectedHandler, $expectedParameters));
     }
 
     private function getRouter(array $routes): Router
