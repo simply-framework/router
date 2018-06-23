@@ -140,7 +140,7 @@ class RouteDefinition
 
         foreach ($matches as $i => $match) {
             $name = $match['name'][0];
-            $pattern = $match['pattern'][0] ?? null;
+            $pattern = $match['pattern'][0] ?? '.*';
 
             $this->format .= '%s';
 
@@ -148,17 +148,12 @@ class RouteDefinition
                 throw new \InvalidArgumentException("Duplicate parameter name '$name'");
             }
 
-            $this->parameterNames[$name] = \count($this->parameterNames);
-
-            if ($pattern !== null) {
-                if (!$this->isValidPattern($pattern)) {
-                    throw new \InvalidArgumentException("Invalid regular expression '$pattern'");
-                }
-
-                $fullPattern .= sprintf("(?'%s'%s)", $name, $pattern);
-            } else {
-                $fullPattern .= sprintf("(?'%s'.*)", $name);
+            if (!$this->isValidPattern($pattern)) {
+                throw new \InvalidArgumentException("Invalid regular expression '$pattern'");
             }
+
+            $this->parameterNames[$name] = \count($this->parameterNames);
+            $fullPattern .= sprintf("(?'%s'%s)", $name, $pattern);
 
             $start = $match[0][1] + \strlen($match[0][0]);
             $length = (isset($matches[$i + 1]) ? $matches[$i + 1][0][1] : \strlen($segment)) - $start;

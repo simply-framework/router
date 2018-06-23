@@ -37,22 +37,23 @@ class RouteDefinitionProvider
             throw new \InvalidArgumentException("Route with name '$name' already exists");
         }
 
-        $id = \count($this->routeDefinitions);
+        $routeId = \count($this->routeDefinitions);
         $segments = $definition->getSegments();
 
-        $this->routeDefinitions[$id] = $definition->getDefinitionCache();
-        $this->routesByName[$name] = $id;
+        $this->routeDefinitions[$routeId] = $definition->getDefinitionCache();
+        $this->routesByName[$name] = $routeId;
 
         if ($definition->isStatic()) {
-            $this->staticRoutes[implode('/', $segments)][] = $id;
-        } else {
-            foreach (array_values($segments) as $i => $segment) {
-                $this->segmentValues[$i][$segment][$id] = true;
-            }
-
-            $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
-            $this->segmentCounts[\count($segments)][$id] = true;
+            $this->staticRoutes[implode('/', $segments)][] = $routeId;
+            return;
         }
+
+        foreach (array_values($segments) as $i => $segment) {
+            $this->segmentValues[$i][$segment][$routeId] = true;
+        }
+
+        $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
+        $this->segmentCounts[\count($segments)][$routeId] = true;
     }
 
     /**
@@ -109,16 +110,16 @@ TEMPLATE;
 
     /**
      * Returns a route definition by a specific id.
-     * @param int $id Id of the route definition
+     * @param int $routeId Id of the route definition
      * @return RouteDefinition The route definition for the specific id
      */
-    public function getRouteDefinition(int $id): RouteDefinition
+    public function getRouteDefinition(int $routeId): RouteDefinition
     {
-        if (!isset($this->routeDefinitions[$id])) {
-            throw new \InvalidArgumentException("Invalid route id '$id'");
+        if (!isset($this->routeDefinitions[$routeId])) {
+            throw new \InvalidArgumentException("Invalid route id '$routeId'");
         }
 
-        return RouteDefinition::createFromCache($this->routeDefinitions[$id]);
+        return RouteDefinition::createFromCache($this->routeDefinitions[$routeId]);
     }
 
     /**
