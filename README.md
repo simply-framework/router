@@ -14,6 +14,8 @@ generate large and slow regular expressions similar to FastRoute or Symfony Rout
 NOTE: This package is part of personal experimental framework. No stable API or proper documentation is to be expected
 until the framework has proven itself in practical use cases.
 
+API documentation is available at: https://docs.riimu.net/simply/router/
+
 ## Credits
  
 This library is Copyright (c) 2018 Riikka Kalliomäki.

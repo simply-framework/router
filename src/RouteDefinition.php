@@ -358,7 +358,7 @@ class RouteDefinition
     }
 
     /**
-     * Returns an encoded URL for the route based with the given parameter values.
+     * Returns an encoded URL for the route based on the given parameter values.
      * @param string[] $parameters Values for the route parameters
      * @return string The encoded URL for the route
      */
