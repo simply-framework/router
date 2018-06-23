@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-## [0.1.0] - 2018-06-23
+## 0.1.0 - 2018-06-23
 ### Added
 - Initial development release
+
+[Unreleased]: https://github.com/simply-framework/router/compare/v0.1.0...HEAD
