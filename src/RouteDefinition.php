@@ -375,7 +375,7 @@ class RouteDefinition
             unset($parameters[$name]);
         }
 
-        if ($parameters) {
+        if (!empty($parameters)) {
             throw new \InvalidArgumentException(
                 'Unexpected route parameters: ' . implode(', ', array_keys($parameters))
             );
