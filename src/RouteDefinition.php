@@ -28,7 +28,7 @@ class RouteDefinition
     /** @var string The format for generating the route URL from parameters */
     private $format;
 
-    /** @var array<string,int> Associative array of route parameter names and their ordinal numbers */
+    /** @var int[] Associative array of route parameter names and their ordinal numbers */
     private $parameterNames;
 
     /**
@@ -315,7 +315,7 @@ class RouteDefinition
     /**
      * Matches the given segments against the dynamic path segments.
      * @param string[] $segments The segments to match against
-     * @param array $values Array that will be populated with route parameter values on match
+     * @param string[] $values Array that will be populated with route parameter values on match
      * @return bool True if the dynamic segments match, false if not
      */
     public function matchPatterns(array $segments, array & $values): bool
@@ -359,7 +359,7 @@ class RouteDefinition
 
     /**
      * Returns an encoded URL for the route based with the given parameter values.
-     * @param array<string,string> $parameters Values for the route parameters
+     * @param string[] $parameters Values for the route parameters
      * @return string The encoded URL for the route
      */
     public function formatUrl(array $parameters = []): string

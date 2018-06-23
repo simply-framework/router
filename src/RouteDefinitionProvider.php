@@ -10,19 +10,19 @@ namespace Simply\Router;
  */
 class RouteDefinitionProvider
 {
-    /** @var array<string,int[]> List of static paths to route */
+    /** @var array[] List of static paths to route */
     protected $staticRoutes = [];
 
-    /** @var array<int,int[]> List of routes per number of segments */
+    /** @var array[] List of routes per number of segments */
     protected $segmentCounts = [];
 
-    /** @var array<int,array<string,array<int,true>>> List of routes by each segment */
+    /** @var array[] List of routes by each segment */
     protected $segmentValues = [];
 
     /** @var array[] Cache of all route definitions */
     protected $routeDefinitions = [];
 
-    /** @var array<string,int> List of routes by their name */
+    /** @var int[] List of routes by their name */
     protected $routesByName = [];
 
     /**
@@ -83,7 +83,7 @@ TEMPLATE;
 
     /**
      * Returns list of routes per static path.
-     * @return array<string,int[]> List of routes per static path
+     * @return array[] List of routes per static path
      */
     public function getStaticRoutes(): array
     {
@@ -92,7 +92,7 @@ TEMPLATE;
 
     /**
      * Returns list of routes per number of segments.
-     * @return array<int,int[]> List of routes per number of segments
+     * @return array[] List of routes per number of segments
      */
     public function getSegmentCounts(): array
     {
@@ -101,7 +101,7 @@ TEMPLATE;
 
     /**
      * Returns routes per value of each segment.
-     * @return array<int,array<string,array<int,true>>> Routes per value of each segment
+     * @return array[] Routes per value of each segment
      */
     public function getSegmentValues(): array
     {
