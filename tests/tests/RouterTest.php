@@ -116,12 +116,12 @@ class RouterTest extends TestCase
     public function testPatternRouting()
     {
         $router = $this->getRouter([
-            ['test.a', 'GET', '/route/{param}/path/'],
-            ['test.b', 'GET', '/route/param/{path}/'],
+            ['test.a', 'GET', '/{param}/path/'],
+            ['test.b', 'GET', '/param/{path}/'],
         ]);
 
-        $this->assertRoute($router, 'GET', '/route/foobar/path/', 'test.a', '/route/foobar/path/', ['param' => 'foobar']);
-        $this->assertRoute($router, 'GET', '/route/param/foobar/', 'test.b', '/route/param/foobar/', ['path' => 'foobar']);
+        $this->assertRoute($router, 'GET', '/foobar/path/', 'test.a', '/foobar/path/', ['param' => 'foobar']);
+        $this->assertRoute($router, 'GET', '/param/foobar/', 'test.b', '/param/foobar/', ['path' => 'foobar']);
     }
 
     public function testParameterCase()
@@ -156,8 +156,15 @@ class RouterTest extends TestCase
             ['test.b', 'GET', '/route/start_{paramA}_mid_{paramB}_end/'],
         ]);
 
-        $this->assertRoute($router, 'GET', '/route/foo-bar/path/', 'test.a', '/route/foo-bar/path/', ['paramA' => 'foo', 'paramB' => 'bar']);
-        $this->assertRoute($router, 'GET', '/route/start_foo_mid_bar_end/', 'test.b', '/route/start_foo_mid_bar_end/', ['paramA' => 'foo', 'paramB' => 'bar']);
+        $this->assertRoute($router, 'GET', '/route/foo-bar/path/', 'test.a', '/route/foo-bar/path/', [
+            'paramA' => 'foo',
+            'paramB' => 'bar',
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/start_foo_mid_bar_end/', 'test.b', '/route/start_foo_mid_bar_end/', [
+            'paramA' => 'foo',
+            'paramB' => 'bar',
+        ]);
     }
 
     public function testDefiningSpecificPatterns()
