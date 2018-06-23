@@ -11,6 +11,9 @@ towards fast startup taking advantage of array op-cache optimizations in PHP 7.
 This router uses segment based matching which optimizes usage of static segments in the paths to minimize the need to
 generate large and slow regular expressions similar to FastRoute or Symfony Router.
 
+NOTE: This package is part of personal experimental framework. No stable API or proper documentation is to be expected
+until the framework has proven itself in practical use cases.
+
 ## Credits
  
 This library is Copyright (c) 2018 Riikka Kalliomäki.
