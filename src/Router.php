@@ -111,7 +111,7 @@ class Router
         for ($i = 0; $i < $count; $i++) {
             $matched[] =
                 $this->provider->getRoutesBySegmentValue($i, $segments[$i]) +
-                $this->provider->getRoutesBySegmentValue($i, '/');
+                $this->provider->getRoutesBySegmentValue($i, RouteDefinition::DYNAMIC_SEGMENT);
         }
 
         $matched[] = $countIds;

@@ -18,9 +18,9 @@ if ($theme) {
 }
 
 return new Sami($iterator, $settings + [
-    'title'                => 'Dependency Injection Container API',
+    'title'                => 'Web Application Request Router API',
     'build_dir'            => __DIR__ . '/build/doc',
     'cache_dir'            => __DIR__ . '/build/cache',
-    'remote_repository'    => new GitHubRemoteRepository('simply-framework/container', __DIR__),
+    'remote_repository'    => new GitHubRemoteRepository('simply-framework/router', __DIR__),
     'default_opened_level' => 2,
 ]);

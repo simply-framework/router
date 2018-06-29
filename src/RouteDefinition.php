@@ -10,6 +10,9 @@ namespace Simply\Router;
  */
 class RouteDefinition
 {
+    /** @var string Value used to indicate a segment is dynamic rather than static */
+    public const DYNAMIC_SEGMENT = '/';
+
     /** @var string The name of the route */
     private $name;
 
@@ -114,7 +117,7 @@ class RouteDefinition
             "/\{(?'name'[a-z0-9_]++)(?::(?'pattern'(?:[^{}]++|\{(?&pattern)\})++))?\}/i",
             $segment,
             $matches,
-            PREG_SET_ORDER | PREG_OFFSET_CAPTURE | PREG_UNMATCHED_AS_NULL
+            \PREG_SET_ORDER | \PREG_OFFSET_CAPTURE | \PREG_UNMATCHED_AS_NULL
         );
 
         if ($count === 0) {
@@ -125,7 +128,7 @@ class RouteDefinition
 
         $pattern = $this->formatPattern($segment, $matches);
         $this->patterns[\count($this->segments)] = sprintf('/%s/', $pattern);
-        $this->segments[] = '/';
+        $this->segments[] = self::DYNAMIC_SEGMENT;
     }
 
     /**
@@ -203,11 +206,11 @@ class RouteDefinition
     {
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
             throw new \ErrorException($message, 0, $severity, $file, $line);
-        }, E_ALL);
+        }, \E_ALL);
 
         try {
             $result = preg_match("/$pattern/", '');
-            return $result !== false && preg_last_error() === PREG_NO_ERROR;
+            return $result !== false && preg_last_error() === \PREG_NO_ERROR;
         } catch (\ErrorException $exception) {
             $errorMessage = sprintf("Invalid regular expression '%s': %s", $pattern, $exception->getMessage());
             throw new \InvalidArgumentException($errorMessage, 0, $exception);
@@ -221,7 +224,7 @@ class RouteDefinition
      * @param array $cache The cached RouteDefinition values
      * @return RouteDefinition A new RouteDefinition instance
      */
-    public static function createFromCache(array $cache): RouteDefinition
+    public static function createFromCache(array $cache): self
     {
         /** @var RouteDefinition $definition */
         $definition = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();

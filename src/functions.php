@@ -9,7 +9,7 @@ namespace Simply\Router;
  */
 function split_segments(string $path): array
 {
-    return string_split('#/#', $path, -1, PREG_SPLIT_NO_EMPTY);
+    return string_split('#/#', $path, -1, \PREG_SPLIT_NO_EMPTY);
 }
 
 /**
@@ -24,7 +24,7 @@ function string_split(string $pattern, string $subject, int $limit = -1, int $fl
 {
     $parts = preg_split($pattern, $subject, $limit, $flags);
 
-    if (!\is_array($parts) || preg_last_error() !== PREG_NO_ERROR) {
+    if (!\is_array($parts) || preg_last_error() !== \PREG_NO_ERROR) {
         throw new \RuntimeException('Error splitting string');
     }
 
