@@ -88,35 +88,30 @@ class Router
             }
         }
 
-        $matchedIds = $this->getIntersectingIds($segments);
+        $matchedIds = $this->getDynamicRouteIds($segments);
         return $this->getMatchingRoutes($matchedIds, $method, $segments);
     }
 
     /**
-     * Returns a list of route ids for routes that have matching static path segments.
+     * Returns a list of route ids for dynamic routes that have matching static path segments.
      * @param string[] $segments The requested path segments
-     * @return int[] List of route ids for routes that have matching static path segments
+     * @return int[] List of route ids for dynamic routes that have matching static path segments
      */
-    private function getIntersectingIds(array $segments): array
+    private function getDynamicRouteIds(array $segments): array
     {
-        $count = \count($segments);
         $matched = [];
+        $index = 0;
 
-        $countIds = $this->provider->getRoutesBySegmentCount($count);
-
-        if ($countIds === []) {
-            return [];
-        }
-
-        for ($i = 0; $i < $count; $i++) {
+        do {
             $matched[] =
-                $this->provider->getRoutesBySegmentValue($i, $segments[$i]) +
-                $this->provider->getRoutesBySegmentValue($i, RouteDefinition::DYNAMIC_SEGMENT);
-        }
+                $this->provider->getRoutesBySegmentValue($index, $segments[$index]) +
+                $this->provider->getRoutesBySegmentValue($index, RouteDefinition::DYNAMIC_SEGMENT);
+            $index++;
+        } while (isset($segments[$index]));
 
-        $matched[] = $countIds;
+        $matched[] = $this->provider->getRoutesBySegmentCount(\count($segments));
 
-        return array_values($count > 0 ? array_intersect_key(... $matched) : $matched[0]);
+        return array_values(array_intersect_key(... $matched));
     }
 
     /**

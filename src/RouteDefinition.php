@@ -204,19 +204,21 @@ class RouteDefinition
      */
     private function isValidPattern(string $pattern): bool
     {
+        $result = false;
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
             throw new \ErrorException($message, 0, $severity, $file, $line);
         }, \E_ALL);
 
         try {
             $result = preg_match("/$pattern/", '');
-            return $result !== false && preg_last_error() === \PREG_NO_ERROR;
         } catch (\ErrorException $exception) {
             $errorMessage = sprintf("Invalid regular expression '%s': %s", $pattern, $exception->getMessage());
             throw new \InvalidArgumentException($errorMessage, 0, $exception);
         } finally {
             restore_error_handler();
         }
+
+        return $result !== false && preg_last_error() === \PREG_NO_ERROR;
     }
 
     /**

@@ -9,20 +9,18 @@ namespace Simply\Router;
  */
 function split_segments(string $path): array
 {
-    return string_split('#/#', $path, -1, \PREG_SPLIT_NO_EMPTY);
+    return string_split('#/#', $path);
 }
 
 /**
- * Splits the string into parts using regular expressions.
+ * Splits the string into parts using regular expressions and returns nonempty parts.
  * @param string $pattern The pattern to use for splitting
  * @param string $subject The string to split
- * @param int $limit Maximum number of parts or -1 for unlimited
- * @param int $flags The flags for the preg_split
  * @return string[] Split parts from the string
  */
-function string_split(string $pattern, string $subject, int $limit = -1, int $flags = 0): array
+function string_split(string $pattern, string $subject): array
 {
-    $parts = preg_split($pattern, $subject, $limit, $flags);
+    $parts = preg_split($pattern, $subject, -1, PREG_SPLIT_NO_EMPTY);
 
     if (!\is_array($parts) || preg_last_error() !== \PREG_NO_ERROR) {
         throw new \RuntimeException('Error splitting string');
