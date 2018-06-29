@@ -20,7 +20,7 @@ function split_segments(string $path): array
  */
 function string_split(string $pattern, string $subject): array
 {
-    $parts = preg_split($pattern, $subject, -1, PREG_SPLIT_NO_EMPTY);
+    $parts = preg_split($pattern, $subject, -1, \PREG_SPLIT_NO_EMPTY);
 
     if (!\is_array($parts) || preg_last_error() !== \PREG_NO_ERROR) {
         throw new \RuntimeException('Error splitting string');

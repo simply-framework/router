@@ -204,7 +204,6 @@ class RouteDefinition
      */
     private function isValidPattern(string $pattern): bool
     {
-        $result = false;
         set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
             throw new \ErrorException($message, 0, $severity, $file, $line);
         }, \E_ALL);

@@ -208,6 +208,19 @@ class RouterTest extends TestCase
         $this->assertRoute($router, 'POST', '/path/to/route/', 'test.b', '/path/to/route/', ['param' => 'to']);
     }
 
+    public function testStaticRoutePreference()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/path/to/route/'],
+            ['test.b', 'GET', '/path/{param}/route/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/path/to/route/', 'test.a', '/path/to/route/');
+        $this->assertRoute($router, 'GET', '/path/foobar/route/', 'test.b', '/path/foobar/route/', [
+            'param' => 'foobar'
+        ]);
+    }
+
     public function testRoutingWithEncodedCharacter()
     {
         $router = $this->getRouter([
