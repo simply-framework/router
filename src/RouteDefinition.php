@@ -28,7 +28,7 @@ class RouteDefinition
     /** @var string The format for generating the route URL from parameters */
     private $format;
 
-    /** @var int[] Associative array of route parameter names and their ordinal numbers */
+    /** @var string[] Names of route parameters in order of appearance */
     private $parameterNames;
 
     /**
@@ -144,7 +144,7 @@ class RouteDefinition
 
             $this->format .= '%s';
 
-            if (isset($this->parameterNames[$name])) {
+            if (\in_array($name, $this->parameterNames, true)) {
                 throw new \InvalidArgumentException("Duplicate parameter name '$name'");
             }
 
@@ -152,7 +152,7 @@ class RouteDefinition
                 throw new \InvalidArgumentException("Invalid regular expression '$pattern'");
             }
 
-            $this->parameterNames[$name] = \count($this->parameterNames);
+            $this->parameterNames[] = $name;
             $fullPattern .= sprintf("(?'%s'%s)", $name, $pattern);
 
             $start = $match[0][1] + \strlen($match[0][0]);
@@ -236,8 +236,6 @@ class RouteDefinition
             $definition->parameterNames,
         ] = $cache;
 
-        $definition->parameterNames = array_flip($definition->parameterNames);
-
         return $definition;
     }
 
@@ -254,7 +252,7 @@ class RouteDefinition
             $this->patterns,
             $this->handler,
             $this->format,
-            array_keys($this->parameterNames),
+            $this->parameterNames,
         ];
     }
 
@@ -331,7 +329,7 @@ class RouteDefinition
                 return false;
             }
 
-            $parsed += array_intersect_key($match, $this->parameterNames);
+            $parsed += array_intersect_key($match, array_flip($this->parameterNames));
         }
 
         $values = $parsed;
@@ -366,7 +364,7 @@ class RouteDefinition
     {
         $values = [];
 
-        foreach (array_keys($this->parameterNames) as $name) {
+        foreach ($this->parameterNames as $name) {
             if (!isset($parameters[$name])) {
                 throw new \InvalidArgumentException("Missing route parameter '$name'");
             }

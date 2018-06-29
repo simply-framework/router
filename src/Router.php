@@ -78,11 +78,10 @@ class Router
      */
     private function matchRoutes(string $method, array $segments): array
     {
-        $staticRoutes = $this->provider->getStaticRoutes();
-        $path = implode('/', $segments);
+        $staticIds = $this->provider->getRoutesByStaticPath(implode('/', $segments));
 
-        if (isset($staticRoutes[$path])) {
-            $routes = $this->getMatchingRoutes($staticRoutes[$path], $method, $segments);
+        if ($staticIds !== []) {
+            $routes = $this->getMatchingRoutes($staticIds, $method, $segments);
 
             if ($routes) {
                 return $routes;
@@ -103,16 +102,16 @@ class Router
         $count = \count($segments);
         $matched = [];
 
-        $countIds = $this->provider->getSegmentCountIds($count);
+        $countIds = $this->provider->getRoutesBySegmentCount($count);
 
         if ($countIds === []) {
             return [];
         }
 
-        foreach ($segments as $i => $segment) {
+        for ($i = 0; $i < $count; $i++) {
             $matched[] =
-                $this->provider->getSegmentValueIds($i, $segment) +
-                $this->provider->getSegmentValueIds($i, '/');
+                $this->provider->getRoutesBySegmentValue($i, $segments[$i]) +
+                $this->provider->getRoutesBySegmentValue($i, '/');
         }
 
         $matched[] = $countIds;

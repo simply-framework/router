@@ -82,12 +82,13 @@ TEMPLATE;
     }
 
     /**
-     * Returns list of routes per static path.
-     * @return array[] List of routes per static path
+     * Returns route ids for routes with specific static path.
+     * @param string $path The static route path to search
+     * @return int[] List of route ids with specific static path
      */
-    public function getStaticRoutes(): array
+    public function getRoutesByStaticPath(string $path): array
     {
-        return $this->staticRoutes;
+        return $this->staticRoutes[$path] ?? [];
     }
 
     /**
@@ -95,7 +96,7 @@ TEMPLATE;
      * @param int $count The number of segments in the path
      * @return int[] List of route ids with specific segment count
      */
-    public function getSegmentCountIds(int $count): array
+    public function getRoutesBySegmentCount(int $count): array
     {
         return $this->segmentCounts[$count] ?? [];
     }
@@ -106,7 +107,7 @@ TEMPLATE;
      * @param string $value The value for the segment or '/' dynamic segments
      * @return int[] List of route ids the match the given criteria
      */
-    public function getSegmentValueIds(int $segment, string $value): array
+    public function getRoutesBySegmentValue(int $segment, string $value): array
     {
         return $this->segmentValues[$segment][$value] ?? [];
     }
