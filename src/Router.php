@@ -83,7 +83,7 @@ class Router
         if ($staticIds !== []) {
             $routes = $this->getMatchingRoutes($staticIds, $method, $segments);
 
-            if ($routes) {
+            if ($routes !== []) {
                 return $routes;
             }
         }

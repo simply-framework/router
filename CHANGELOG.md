@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   `RouteDefinitionProvider::getRoutesBySegmentCount($count)`
 - The signature and name of `RouteDefinitionProvider::getSegmentValues()` was changed to
   `RouteDefinitionProvider::getRoutesBySegmentValue($segment, $value)`
-- Address code quality issues
+- Addressed numerous code quality and static analysis issues
 
 ## 0.1.0 - 2018-06-23
 ### Added

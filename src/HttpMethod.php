@@ -10,31 +10,31 @@ namespace Simply\Router;
  */
 class HttpMethod
 {
-    /** @var string The HTTP GET request method */
+    /** The HTTP GET request method */
     public const GET = 'GET';
 
-    /** @var string The HTTP HEAD request method */
+    /** The HTTP HEAD request method */
     public const HEAD = 'HEAD';
 
-    /** @var string The HTTP POST request method */
+    /** The HTTP POST request method */
     public const POST = 'POST';
 
-    /** @var string The HTTP PUT request method */
+    /** The HTTP PUT request method */
     public const PUT = 'PUT';
 
-    /** @var string The HTTP DELETE request method */
+    /** The HTTP DELETE request method */
     public const DELETE = 'DELETE';
 
-    /** @var string The HTTP CONNECT request method */
+    /** The HTTP CONNECT request method */
     public const CONNECT = 'CONNECT';
 
-    /** @var string The HTTP OPTIONS request method */
+    /** The HTTP OPTIONS request method */
     public const OPTIONS = 'OPTIONS';
 
-    /** @var string The HTTP TRACE request method */
+    /** The HTTP TRACE request method */
     public const TRACE = 'TRACE';
 
-    /** @var string The HTTP PATCH request method */
+    /** The HTTP PATCH request method */
     public const PATCH = 'PATCH';
 
     /**

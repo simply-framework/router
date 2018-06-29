@@ -10,7 +10,7 @@ namespace Simply\Router;
  */
 class RouteDefinition
 {
-    /** @var string Value used to indicate a segment is dynamic rather than static */
+    /** Value used to indicate a segment is dynamic rather than static */
     public const DYNAMIC_SEGMENT = '/';
 
     /** @var string The name of the route */
@@ -113,14 +113,14 @@ class RouteDefinition
      */
     private function addSegment(string $segment): void
     {
-        $count = preg_match_all(
+        preg_match_all(
             "/\{(?'name'[a-z0-9_]++)(?::(?'pattern'(?:[^{}]++|\{(?&pattern)\})++))?\}/i",
             $segment,
             $matches,
             \PREG_SET_ORDER | \PREG_OFFSET_CAPTURE | \PREG_UNMATCHED_AS_NULL
         );
 
-        if ($count === 0) {
+        if (empty($matches)) {
             $this->segments[] = $segment;
             $this->format .= $this->formatEncode($segment) . '/';
             return;
@@ -222,11 +222,11 @@ class RouteDefinition
     /**
      * Returns a new RouteDefinition instance based on the cached values.
      * @param array $cache The cached RouteDefinition values
-     * @return RouteDefinition A new RouteDefinition instance
+     * @return self A new RouteDefinition instance
      */
     public static function createFromCache(array $cache): self
     {
-        /** @var RouteDefinition $definition */
+        /** @var self $definition */
         $definition = (new \ReflectionClass(static::class))->newInstanceWithoutConstructor();
 
         [

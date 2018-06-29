@@ -10,13 +10,13 @@ namespace Simply\Router;
  */
 class RouteDefinitionProvider
 {
-    /** @var array<int[]> List of static paths to route */
+    /** @var array[] List of static paths to route */
     protected $staticRoutes = [];
 
-    /** @var array<int[]> List of routes per number of segments */
+    /** @var array[] List of routes per number of segments */
     protected $segmentCounts = [];
 
-    /** @var array<array<int[]>> List of routes by each segment */
+    /** @var array[] List of routes by each segment */
     protected $segmentValues = [];
 
     /** @var array[] Cache of all route definitions */
