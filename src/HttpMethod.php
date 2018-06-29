@@ -49,7 +49,7 @@ class HttpMethod
 
     /**
      * Returns list of all valid HTTP request methods.
-     * @return array List of all valid HTTP request methods
+     * @return string[] List of all valid HTTP request methods
      */
     public static function getAll(): array
     {
