@@ -42,16 +42,16 @@ class HttpMethod
      * @param string $method The string to test
      * @return bool True if it is a valid HTTP request method, false if not
      */
-    public static function isValidMethod(string $method): bool
+    public static function isValid(string $method): bool
     {
-        return \in_array($method, self::getHttpMethods(), true);
+        return \in_array($method, self::getAll(), true);
     }
 
     /**
      * Returns list of all valid HTTP request methods.
      * @return array List of all valid HTTP request methods
      */
-    public static function getHttpMethods(): array
+    public static function getAll(): array
     {
         return [
             self::GET,

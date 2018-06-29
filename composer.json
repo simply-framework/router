@@ -28,6 +28,9 @@
   "autoload-dev": {
     "psr-4": {
       "Simply\\Router\\": "tests/tests/"
-    }
+    },
+    "files": [
+      "src/functions.php"
+    ]
   }
 }

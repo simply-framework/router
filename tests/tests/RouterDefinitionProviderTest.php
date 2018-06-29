@@ -44,6 +44,9 @@ class RouterDefinitionProviderTest extends TestCase
         $provider->addRouteDefinition(new RouteDefinition('test.a', ['GET'], '/{param}/to/route/', 'handler'));
         $provider->addRouteDefinition(new RouteDefinition('test.b', ['GET'], '/{param}/', 'handler'));
 
-        $this->assertSame([0, 1, 2, 3], array_keys($provider->getSegmentCounts()));
+        $property = new \ReflectionProperty(RouteDefinitionProvider::class, 'segmentCounts');
+        $property->setAccessible(true);
+
+        $this->assertSame([0, 1, 2, 3], array_keys($property->getValue($provider)));
     }
 }

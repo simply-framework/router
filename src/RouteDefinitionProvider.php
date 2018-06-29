@@ -10,13 +10,13 @@ namespace Simply\Router;
  */
 class RouteDefinitionProvider
 {
-    /** @var array[] List of static paths to route */
+    /** @var array<int[]> List of static paths to route */
     protected $staticRoutes = [];
 
-    /** @var array[] List of routes per number of segments */
+    /** @var array<int[]> List of routes per number of segments */
     protected $segmentCounts = [];
 
-    /** @var array[] List of routes by each segment */
+    /** @var array<array<int[]>> List of routes by each segment */
     protected $segmentValues = [];
 
     /** @var array[] Cache of all route definitions */
@@ -48,12 +48,12 @@ class RouteDefinitionProvider
             return;
         }
 
-        foreach (array_values($segments) as $i => $segment) {
-            $this->segmentValues[$i][$segment][$routeId] = true;
+        foreach ($segments as $i => $segment) {
+            $this->segmentValues[$i][$segment][$routeId] = $routeId;
         }
 
         $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
-        $this->segmentCounts[\count($segments)][$routeId] = true;
+        $this->segmentCounts[\count($segments)][$routeId] = $routeId;
     }
 
     /**
@@ -91,21 +91,24 @@ TEMPLATE;
     }
 
     /**
-     * Returns list of routes per number of segments.
-     * @return array[] List of routes per number of segments
+     * Returns route ids with specific segment count.
+     * @param int $count The number of segments in the path
+     * @return int[] List of route ids with specific segment count
      */
-    public function getSegmentCounts(): array
+    public function getSegmentCountIds(int $count): array
     {
-        return $this->segmentCounts;
+        return $this->segmentCounts[$count] ?? [];
     }
 
     /**
-     * Returns routes per value of each segment.
-     * @return array[] Routes per value of each segment
+     * Returns route ids with specific value for specific segment.
+     * @param int $segment The number of the segment
+     * @param string $value The value for the segment or '/' dynamic segments
+     * @return int[] List of route ids the match the given criteria
      */
-    public function getSegmentValues(): array
+    public function getSegmentValueIds(int $segment, string $value): array
     {
-        return $this->segmentValues;
+        return $this->segmentValues[$segment][$value] ?? [];
     }
 
     /**

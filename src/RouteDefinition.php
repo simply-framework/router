@@ -56,7 +56,7 @@ class RouteDefinition
             $this->addMethod($method);
         }
 
-        $segments = preg_split('#/#', $path, -1, PREG_SPLIT_NO_EMPTY);
+        $segments = split_segments($path);
 
         foreach ($segments as $segment) {
             $this->addSegment($segment);
@@ -97,7 +97,7 @@ class RouteDefinition
      */
     private function addMethod(string $method): void
     {
-        if (!HttpMethod::isValidMethod($method)) {
+        if (!HttpMethod::isValid($method)) {
             throw new \InvalidArgumentException("Invalid HTTP request method '$method'");
         }
 
@@ -125,13 +125,13 @@ class RouteDefinition
 
         $pattern = $this->formatPattern($segment, $matches);
         $this->patterns[\count($this->segments)] = sprintf('/%s/', $pattern);
-        $this->segments[] = '#';
+        $this->segments[] = '/';
     }
 
     /**
      * Creates a dynamic segment regular expression based on the provided segment.
      * @param string $segment The segment to turn into regular expression
-     * @param array $matches List of matches for the dynamic parts
+     * @param array[] $matches List of matches for the dynamic parts
      * @return string The fully formed regular expression for the segment
      */
     private function formatPattern(string $segment, array $matches): string
@@ -156,7 +156,7 @@ class RouteDefinition
             $fullPattern .= sprintf("(?'%s'%s)", $name, $pattern);
 
             $start = $match[0][1] + \strlen($match[0][0]);
-            $length = (isset($matches[$i + 1]) ? $matches[$i + 1][0][1] : \strlen($segment)) - $start;
+            $length = ($matches[$i + 1][0][1] ?? \strlen($segment)) - $start;
             $fullPattern = $this->appendPattern($fullPattern, $segment, $start, $length);
         }
 

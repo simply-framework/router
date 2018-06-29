@@ -39,17 +39,17 @@ class Router
      */
     public function route(string $method, string $path): Route
     {
-        if (!HttpMethod::isValidMethod($method)) {
+        if (!HttpMethod::isValid($method)) {
             throw new \InvalidArgumentException("Invalid HTTP method '$method'");
         }
 
         $this->allowedMethods = [];
 
-        $segments = preg_split('#/#', $path, -1, PREG_SPLIT_NO_EMPTY);
+        $segments = split_segments($path);
         $routes = $this->matchRoutes($method, $segments);
 
         if (\count($routes) === 1) {
-            return reset($routes);
+            return $routes[0];
         }
 
         if (\count($routes) > 1) {
@@ -103,20 +103,21 @@ class Router
         $count = \count($segments);
         $matched = [];
 
-        $segmentCounts = $this->provider->getSegmentCounts();
-        $segmentValues = $this->provider->getSegmentValues();
+        $countIds = $this->provider->getSegmentCountIds($count);
 
-        if (empty($segmentCounts[$count])) {
+        if ($countIds === []) {
             return [];
         }
 
-        for ($i = 0; $i < $count; $i++) {
-            $matched[] = ($segmentValues[$i][$segments[$i]] ?? []) + ($segmentValues[$i]['#'] ?? []);
+        foreach ($segments as $i => $segment) {
+            $matched[] =
+                $this->provider->getSegmentValueIds($i, $segment) +
+                $this->provider->getSegmentValueIds($i, '/');
         }
 
-        $matched[] = $segmentCounts[$count];
+        $matched[] = $countIds;
 
-        return array_keys($count > 0 ? array_intersect_key(... $matched) : $matched[0]);
+        return array_values($count > 0 ? array_intersect_key(... $matched) : $matched[0]);
     }
 
     /**
