@@ -23,14 +23,14 @@
   "autoload": {
     "psr-4": {
       "Simply\\Router\\": "src/"
-    }
-  },
-  "autoload-dev": {
-    "psr-4": {
-      "Simply\\Router\\": "tests/tests/"
     },
     "files": [
       "src/functions.php"
     ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Simply\\Router\\": "tests/tests/"
+    }
   }
 }
