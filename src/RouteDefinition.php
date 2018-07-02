@@ -77,10 +77,6 @@ class RouteDefinition
      */
     private function isConstantValue($value): bool
     {
-        if ($value === null || is_scalar($value)) {
-            return true;
-        }
-
         if (\is_array($value)) {
             foreach ($value as $item) {
                 if (!$this->isConstantValue($item)) {
@@ -91,7 +87,7 @@ class RouteDefinition
             return true;
         }
 
-        return false;
+        return $value === null || is_scalar($value);
     }
 
     /**
