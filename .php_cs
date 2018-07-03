@@ -15,7 +15,7 @@ return \PhpCsFixer\Config::create()
         'binary_operator_spaces' => true,
         'blank_line_after_opening_tag' => true,
         'cast_spaces' => true,
-        'class_attributes_separation' => true,
+        'class_attributes_separation' => ['elements' => ['method']],
         'combine_consecutive_issets' => true,
         'combine_consecutive_unsets' => true,
         'concat_space' => ['spacing' => 'one'],
