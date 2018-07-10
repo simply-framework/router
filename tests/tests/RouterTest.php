@@ -243,6 +243,7 @@ class RouterTest extends TestCase
         $this->assertSame($method, $route->getMethod());
         $this->assertSame($expectedHandler, $route->getHandler());
         $this->assertSame($expectedPath, $route->getPath());
+        $this->assertSame($expectedParameters, $route->getParameters());
 
         foreach ($expectedParameters as $name => $value) {
             $this->assertSame($value, $route->getParameter($name));

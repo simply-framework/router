@@ -96,4 +96,13 @@ class Route
 
         return $this->values[$name];
     }
+
+    /**
+     * Returns all parameters from the requested route as an associative array.
+     * @return string[] All parameters from the requested route
+     */
+    public function getParameters(): array
+    {
+        return $this->values;
+    }
 }

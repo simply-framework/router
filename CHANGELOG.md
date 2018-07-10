@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.2] - 2018-07-10
+### Added
+- Added `Route::getParameters()` to fetch all the parameters set by the route
+
 ## [0.2.1] - 2018-07-02
 ### Fixed
 - Added missing functions.php from autoloaded files on normal autoloader
@@ -32,6 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Initial development release
 
-[Unreleased]: https://github.com/simply-framework/router/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/simply-framework/router/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/simply-framework/router/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/simply-framework/router/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/simply-framework/router/compare/v0.1.0...v0.2.0
