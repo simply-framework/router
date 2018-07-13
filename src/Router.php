@@ -63,7 +63,7 @@ class Router
 
             throw new MethodNotAllowedException(
                 "The requested method '$method' is not within list of allowed methods",
-                array_unique($this->allowedMethods)
+                array_values(array_intersect(HttpMethod::getAll(), $this->allowedMethods))
             );
         }
 
