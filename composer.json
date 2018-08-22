@@ -18,7 +18,7 @@
     "php": "^7.2"
   },
   "require-dev": {
-    "phpunit/phpunit": "^7.2",
+    "phpunit/phpunit": "^7.3",
     "riimu/php-cs-fixer-config": "^0.1.0",
     "riimu/sami-config": "^0.1.0"
   },
