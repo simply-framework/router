@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.4] - 2018-10-17
+### Added
+- The `RouteDefinitionProvider::getCacheFile()` now accepts an optional parameter for encoding callback
+
+## Changed
+- Some tests and conditions have been improved with mutation testing
+
 ## [0.2.3] - 2018-07-16
 ### Changed
 - Ensure the allowed methods are always listed in canonical order

@@ -24,6 +24,29 @@ class RouterTest extends TestCase
         $this->assertRoute($router, 'GET', '', 'test.route', '/');
     }
 
+    public function testRoutingEmptyStringPath()
+    {
+        $router = $this->getRouter([
+            ['test.route', 'GET', ''],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/', 'test.route', '/');
+        $this->assertRoute($router, 'GET', '', 'test.route', '/');
+    }
+
+    public function testRoutingSingleSegment()
+    {
+        $router = $this->getRouter([
+            ['test.a', 'GET', '/path'],
+            ['test.b', 'GET', '/route/'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/path/', 'test.a', '/path');
+        $this->assertRoute($router, 'GET', '/path', 'test.a', '/path');
+        $this->assertRoute($router, 'GET', '/route/', 'test.b', '/route/');
+        $this->assertRoute($router, 'GET', '/route', 'test.b', '/route/');
+    }
+
     public function testSimpleRoute()
     {
         $router = $this->getRouter([
@@ -115,15 +138,38 @@ class RouterTest extends TestCase
         $this->assertSame(['GET', 'HEAD', 'POST', 'OPTIONS', 'PATCH'], $exception->getAllowedMethods());
     }
 
+    public function testMethodNotAllowedOneMethod()
+    {
+        $router = $this->getRouter([
+            ['test.get', 'POST', '/route/path/'],
+        ]);
+
+        $exception = null;
+
+        try {
+            $router->route('GET', '/route/path/');
+        } catch (MethodNotAllowedException $caughtException) {
+            $exception = $caughtException;
+        }
+
+        $this->assertInstanceOf(MethodNotAllowedException::class, $exception);
+        $this->assertSame(['POST'], $exception->getAllowedMethods());
+    }
+
     public function testPatternRouting()
     {
         $router = $this->getRouter([
             ['test.a', 'GET', '/{param}/path/'],
             ['test.b', 'GET', '/param/{path}/'],
+            ['test.c', 'GET', '/{param}/{path}/route/'],
         ]);
 
         $this->assertRoute($router, 'GET', '/foobar/path/', 'test.a', '/foobar/path/', ['param' => 'foobar']);
         $this->assertRoute($router, 'GET', '/param/foobar/', 'test.b', '/param/foobar/', ['path' => 'foobar']);
+        $this->assertRoute($router, 'GET', '/param/path/route/', 'test.c', '/param/path/route/', [
+            'param' => 'param',
+            'path' => 'path',
+        ]);
     }
 
     public function testParameterCase()
@@ -174,10 +220,15 @@ class RouterTest extends TestCase
         $router = $this->getRouter([
             ['test.a', 'GET', '/route/{param:[a-z]+}/path/'],
             ['test.b', 'GET', '/route/{param:\d+}/path/'],
+            ['test.c', 'GET', '/route/{foo:\d+}{bar:[a-z]+}/path/'],
         ]);
 
         $this->assertRoute($router, 'GET', '/route/abc/path/', 'test.a', '/route/abc/path/', ['param' => 'abc']);
         $this->assertRoute($router, 'GET', '/route/123/path/', 'test.b', '/route/123/path/', ['param' => '123']);
+        $this->assertRoute($router, 'GET', '/route/123abc/path/', 'test.c', '/route/123abc/path/', [
+            'foo' => '123',
+            'bar' => 'abc',
+        ]);
     }
 
     public function testIncompleteRouteMatch()

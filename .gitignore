@@ -1,4 +1,6 @@
 build/
 vendor/
 composer.lock
+infection.json.dist
+infection-log.txt
 psalm.xml

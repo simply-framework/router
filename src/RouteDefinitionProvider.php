@@ -58,27 +58,32 @@ class RouteDefinitionProvider
 
     /**
      * Returns PHP code for cached RouteDefinitionProvider that can be stored in file and included.
+     * @param callable $encoder Encoding callback for values or null for default
      * @return string PHP code for cached RouteDefinitionProvider
      */
-    public function getCacheFile(): string
+    public function getCacheFile(callable $encoder = null): string
     {
-        $template = <<<'TEMPLATE'
+        if (\is_null($encoder)) {
+            $encoder = function ($value): string {
+                return var_export($value, true);
+            };
+        }
+
+        $statics = $encoder($this->staticRoutes);
+        $counts = $encoder($this->segmentCounts);
+        $values = $encoder($this->segmentValues);
+        $definitions = $encoder($this->routeDefinitions);
+        $names = $encoder($this->routesByName);
+
+        return <<<TEMPLATE
 <?php return new class extends \Simply\Router\RouteDefinitionProvider {
-    protected $staticRoutes = ['STATICS'];
-    protected $segmentCounts = ['COUNTS'];
-    protected $segmentValues = ['VALUES'];
-    protected $routeDefinitions = ['DEFINITIONS'];
-    protected $routesByName = ['NAMES'];
+    protected \$staticRoutes = $statics;
+    protected \$segmentCounts = $counts;
+    protected \$segmentValues = $values;
+    protected \$routeDefinitions = $definitions;
+    protected \$routesByName = $names;
 };
 TEMPLATE;
-
-        return strtr($template, [
-            "['STATICS']" => var_export($this->staticRoutes, true),
-            "['COUNTS']" => var_export($this->segmentCounts, true),
-            "['VALUES']" => var_export($this->segmentValues, true),
-            "['DEFINITIONS']" => var_export($this->routeDefinitions, true),
-            "['NAMES']" => var_export($this->routesByName, true),
-        ]);
     }
 
     /**

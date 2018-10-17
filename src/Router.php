@@ -52,7 +52,7 @@ class Router
             return $routes[0];
         }
 
-        if (\count($routes) > 1) {
+        if (\count($routes) !== 0) {
             throw new \UnexpectedValueException("The given path '$path' matches more than one route");
         }
 

@@ -1,5 +1,4 @@
 language: php
-sudo: false
 
 php:
   - 7.2
@@ -15,7 +14,7 @@ before_install:
 
 install:
   - mkdir -p build/php_codesniffer build/php-cs-fixer build/ocular
-  - composer require --no-suggest --no-progress -n -a -d build/php-cs-fixer "friendsofphp/php-cs-fixer:^2.12"
+  - composer require --no-suggest --no-progress -n -a -d build/php-cs-fixer "friendsofphp/php-cs-fixer:^2.13"
   - composer require --no-suggest --no-progress -n -a -d build/php_codesniffer "squizlabs/php_codesniffer:^3.3"
   - composer require --no-suggest --no-progress -n -a -d build/ocular "scrutinizer/ocular:^1.5"
   - composer update --no-suggest --no-progress -n -a
