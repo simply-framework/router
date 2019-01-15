@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.2.5] - 2019-01-15
+### Changed
+- Improved some tests based on mutation testing
+
+### Fixed
+- The router should no longer produce "Undefined offset 0" error when matching route "/" without a match
+
 ## [0.2.4] - 2018-10-17
 ### Added
 - The `RouteDefinitionProvider::getCacheFile()` now accepts an optional parameter for encoding callback
@@ -47,7 +54,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 - Initial development release
 
-[Unreleased]: https://github.com/simply-framework/router/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/simply-framework/router/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/simply-framework/router/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/simply-framework/router/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/simply-framework/router/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/simply-framework/router/compare/v0.2.1...v0.2.2

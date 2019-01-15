@@ -5,7 +5,7 @@ namespace Simply\Router;
 /**
  * Provides route definitions and matching arrays for the router.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @copyright Copyright (c) 2018-2019 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class RouteDefinitionProvider
@@ -50,9 +50,12 @@ class RouteDefinitionProvider
 
         foreach ($segments as $i => $segment) {
             $this->segmentValues[$i][$segment][$routeId] = $routeId;
+
+            if (!isset($this->segmentCounts[$i])) {
+                $this->segmentCounts[$i] = [];
+            }
         }
 
-        $this->segmentCounts += array_fill(0, \count($segments) + 1, []);
         $this->segmentCounts[\count($segments)][$routeId] = $routeId;
     }
 

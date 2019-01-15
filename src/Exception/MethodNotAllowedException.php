@@ -5,7 +5,7 @@ namespace Simply\Router\Exception;
 /**
  * Exception that is thrown when the path matches, but the HTTP request method does not match any known route.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @copyright Copyright (c) 2018-2019 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class MethodNotAllowedException extends RoutingException

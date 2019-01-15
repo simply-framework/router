@@ -19,6 +19,6 @@ API documentation is available at: https://docs.riimu.net/simply/router/
 
 ## Credits
  
-This library is Copyright (c) 2018 Riikka Kalliomäki.
+This library is Copyright (c) 2018-2019 Riikka Kalliomäki.
 
 See LICENSE for license and copying information.

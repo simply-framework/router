@@ -8,7 +8,7 @@ use Simply\Router\Exception\RouteNotFoundException;
 /**
  * Class for routing requested methods and paths to specific routes.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @copyright Copyright (c) 2018-2019 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class Router
@@ -86,6 +86,10 @@ class Router
             if ($routes !== []) {
                 return $routes;
             }
+        }
+
+        if ($segments === []) {
+            return [];
         }
 
         $matchedIds = $this->getDynamicRouteIds($segments);

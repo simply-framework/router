@@ -9,7 +9,7 @@ use Simply\Router\Exception\RouteNotFoundException;
 /**
  * RouterTest.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2018 Riikka Kalliomäki
+ * @copyright Copyright (c) 2018-2019 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class RouterTest extends TestCase
@@ -104,6 +104,16 @@ class RouterTest extends TestCase
 
         $this->expectException(RouteNotFoundException::class);
         $router->route('GET', '/path/to/route/that/does/not/exist/');
+    }
+
+    public function testNoIndexPathRoute(): void
+    {
+        $router = $this->getRouter([
+            ['test.route', 'GET', '/path/route/'],
+        ]);
+
+        $this->expectException(RouteNotFoundException::class);
+        $router->route('GET', '/');
     }
 
     public function testDifferentMethods()
@@ -213,6 +223,21 @@ class RouterTest extends TestCase
             'paramA' => 'foo',
             'paramB' => 'bar',
         ]);
+    }
+
+    public function testQuotedMiddlePattern()
+    {
+        $router = $this->getRouter([
+            ['test.route', 'GET', '/route/{paramA}.{paramB}'],
+        ]);
+
+        $this->assertRoute($router, 'GET', '/route/file.ext', 'test.route', '/route/file.ext', [
+            'paramA' => 'file',
+            'paramB' => 'ext',
+        ]);
+
+        $this->expectException(RouteNotFoundException::class);
+        $router->route('GET', '/route/fileXext');
     }
 
     public function testDefiningSpecificPatterns()
