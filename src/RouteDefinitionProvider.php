@@ -44,7 +44,16 @@ class RouteDefinitionProvider
         $this->routesByName[$name] = $routeId;
 
         if ($definition->isStatic()) {
-            $this->staticRoutes[implode('/', $segments)][] = $routeId;
+            $path = implode('/', $segments);
+
+            foreach ($definition->getMethods() as $method) {
+                if (isset($this->staticRoutes[$method][$path])) {
+                    throw new \InvalidArgumentException("A static route '$method $path' already exists");
+                }
+
+                $this->staticRoutes[$method][$path] = $routeId;
+            }
+
             return;
         }
 
@@ -90,13 +99,14 @@ TEMPLATE;
     }
 
     /**
-     * Returns route ids for routes with specific static path.
+     * Returns route id for the given static route or null if it doesn't exist.
+     * @param string $method The http method for the static route
      * @param string $path The static route path to search
-     * @return int[] List of route ids with specific static path
+     * @return int|null Route id for the static route or null if it doesn't exist
      */
-    public function getRoutesByStaticPath(string $path): array
+    public function getStaticRoute(string $method, string $path): ?int
     {
-        return $this->staticRoutes[$path] ?? [];
+        return $this->staticRoutes[$method][$path] ?? null;
     }
 
     /**

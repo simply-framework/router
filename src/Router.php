@@ -39,13 +39,18 @@ class Router
      */
     public function route(string $method, string $path): Route
     {
+        $segments = preg_split('#/#', $path, -1, \PREG_SPLIT_NO_EMPTY);
+        $static = $this->provider->getStaticRoute($method, implode('/', $segments));
+
+        if ($static !== null) {
+            return new Route($this->provider->getRouteDefinition($static), $method, $segments, []);
+        }
+
         if (!HttpMethod::isValid($method)) {
             throw new \InvalidArgumentException("Invalid HTTP method '$method'");
         }
 
         $this->allowedMethods = [];
-
-        $segments = split_segments($path);
         $routes = $this->matchRoutes($method, $segments);
 
         if (\count($routes) === 1) {
@@ -78,16 +83,6 @@ class Router
      */
     private function matchRoutes(string $method, array $segments): array
     {
-        $staticIds = $this->provider->getRoutesByStaticPath(implode('/', $segments));
-
-        if ($staticIds !== []) {
-            $routes = $this->getMatchingRoutes($staticIds, $method, $segments);
-
-            if ($routes !== []) {
-                return $routes;
-            }
-        }
-
         if ($segments === []) {
             return [];
         }
