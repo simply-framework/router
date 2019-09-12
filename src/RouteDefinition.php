@@ -54,12 +54,15 @@ class RouteDefinition
         $this->handler = $handler;
         $this->format = '/';
         $this->parameterNames = [];
+        $this->methods = array_intersect(HttpMethod::getAll(), $methods);
 
-        foreach ($methods as $method) {
-            $this->addMethod($method);
+        $invalidMethods = array_diff($methods, HttpMethod::getAll());
+
+        if ($invalidMethods) {
+            throw new \InvalidArgumentException('Invalid HTTP request methods: ' . implode(', ', $invalidMethods));
         }
 
-        $segments = split_segments($path);
+        $segments = preg_split('#/#', $path, -1, \PREG_SPLIT_NO_EMPTY);
 
         foreach ($segments as $segment) {
             $this->addSegment($segment);
@@ -91,19 +94,6 @@ class RouteDefinition
     }
 
     /**
-     * Adds a method to the list of allowed HTTP request methods.
-     * @param string $method The HTTP request method to add
-     */
-    private function addMethod(string $method): void
-    {
-        if (!HttpMethod::isValid($method)) {
-            throw new \InvalidArgumentException("Invalid HTTP request method '$method'");
-        }
-
-        $this->methods[] = $method;
-    }
-
-    /**
      * Appends a path segment to the list of matched path segments for the route.
      * @param string $segment The segment to add
      */
@@ -123,7 +113,12 @@ class RouteDefinition
         }
 
         $pattern = $this->formatPattern($segment, $matches);
-        $this->patterns[\count($this->segments)] = sprintf('/%s/', $pattern);
+
+        if (preg_match("#^/\(\?'([a-z0-9_]++)'\^?\.\*\\\$?\)/$#i", $pattern, $match)) {
+            $pattern = $match[1];
+        }
+
+        $this->patterns[\count($this->segments)] = $pattern;
         $this->segments[] = self::DYNAMIC_SEGMENT;
     }
 
@@ -161,7 +156,7 @@ class RouteDefinition
 
         $this->format .= '/';
 
-        return $fullPattern;
+        return "/$fullPattern/";
     }
 
     /**
@@ -316,11 +311,16 @@ class RouteDefinition
      * @param string[] $values Array that will be populated with route parameter values on match
      * @return bool True if the dynamic segments match, false if not
      */
-    public function matchPatterns(array $segments, array & $values): bool
+    public function matchPatterns(array $segments, array & $values = []): bool
     {
         $parsed = [];
 
         foreach ($this->patterns as $i => $pattern) {
+            if ($pattern[0] !== '/') {
+                $parsed[$pattern] = $segments[$i];
+                continue;
+            }
+
             if (!preg_match($pattern, $segments[$i], $match)) {
                 return false;
             }

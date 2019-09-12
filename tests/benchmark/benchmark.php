@@ -10,11 +10,11 @@ set_error_handler(function ($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
 
-require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/../../vendor/autoload.php';
 
 $runtime = 2.0;
 $sets = [
-    [
+    /*[
         'name' => 'Single Route',
         'requests' => [
             ['GET', '/', 'route-a'],
@@ -31,6 +31,24 @@ $sets = [
         'routes' => [
             ['GET', '/{name}/', 'route-a'],
         ]
+    ],
+    [
+        'name' => 'Complex Scenario',
+        'requests' => [
+            ['GET', '/foo/gallery/3/add/', 'route-d'],
+        ],
+        'routes' => [
+            ['GET', '/{name}/', 'route-a'],
+            ['GET', '/{name}/images/', 'route-b'],
+            ['GET', '/{name}/identity/', 'route-c'],
+            ['GET', '/{name}/gallery/{id:\d+}/add/', 'route-d'],
+            ['GET', '/{name}/gallery/{id:\d+}/', 'route-e'],
+        ]
+    ],*/
+    [
+        'name' => 'Real Scenario',
+        'requests' => require __DIR__ . '/requests.php',
+        'routes' => require __DIR__ . '/routes.php',
     ]
 ];
 
@@ -57,8 +75,14 @@ $benchmark = function (Closure $callback, array $requests, float $runtime): int 
     return $count;
 };
 
-$formatResult = function (string $name, int $count, float $runtime): string {
-    return sprintf('  - %-12s %11s (%11s / s)', $name, number_format($count), number_format($count / $runtime));
+$formatResult = function (string $name, int $count, float $runtime, float $percentage = null): string {
+    $result = sprintf('  - %-12s %11s (%11s / s)', $name, number_format($count), number_format($count / $runtime));
+
+    if ($percentage !== null) {
+        $result .= sprintf(' %.2f%%', $percentage * 100);
+    }
+
+    return $result;
 };
 
 foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes]) {
@@ -70,16 +94,16 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
         }
     });
 
-    $count = $benchmark(function (string $method, string $uri) use ($dispatcher): string {
+    $fastCount = $benchmark(function (string $method, string $uri) use ($dispatcher): string {
         return $dispatcher->dispatch($method, $uri)[1];
     }, $requests, $runtime);
 
-    echo $formatResult('FastRoute', $count, $runtime) . "\n";
+    echo $formatResult('FastRoute', $fastCount, $runtime) . "\n";
 
     $provider = new RouteDefinitionProvider();
 
-    foreach ($routes as [$method, $path, $handler]) {
-        $provider->addRouteDefinition(new RouteDefinition($handler, [$method], $path, $handler));
+    foreach ($routes as $key => [$method, $path, $handler]) {
+        $provider->addRouteDefinition(new RouteDefinition("route-$key", [$method], $path, $handler));
     }
 
     $router = new Router($provider);
@@ -88,5 +112,5 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
         return $router->route($method, $uri)->getHandler();
     }, $requests, $runtime);
 
-    echo $formatResult('SimplyRouter', $count, $runtime) . "\n";
+    echo $formatResult('SimplyRouter', $count, $runtime, $count / $fastCount) . "\n";
 }

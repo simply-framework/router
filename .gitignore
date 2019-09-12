@@ -1,5 +1,7 @@
 build/
 vendor/
+tests/benchmark/requests.php
+tests/benchmark/routes.php
 composer.lock
 infection.json.dist
 infection-log.txt

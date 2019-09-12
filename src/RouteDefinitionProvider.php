@@ -13,11 +13,8 @@ class RouteDefinitionProvider
     /** @var int[][] List of static paths to route */
     protected $staticRoutes = [];
 
-    /** @var int[][] List of routes per number of segments */
-    protected $segmentCounts = [];
-
-    /** @var int[][][] List of routes by each segment */
-    protected $segmentValues = [];
+    /** @var array Tree of arrays for matching dynamic routes */
+    protected $dynamicRoutes = [];
 
     /** @var array[] Cache of all route definitions */
     protected $routeDefinitions = [];
@@ -38,34 +35,57 @@ class RouteDefinitionProvider
         }
 
         $routeId = \count($this->routeDefinitions);
-        $segments = $definition->getSegments();
 
         $this->routeDefinitions[$routeId] = $definition->getDefinitionCache();
         $this->routesByName[$name] = $routeId;
 
         if ($definition->isStatic()) {
-            $path = implode('/', $segments);
-
-            foreach ($definition->getMethods() as $method) {
-                if (isset($this->staticRoutes[$method][$path])) {
-                    throw new \InvalidArgumentException("A static route '$method $path' already exists");
-                }
-
-                $this->staticRoutes[$method][$path] = $routeId;
-            }
-
+            $this->addStaticRoute($routeId, $definition);
             return;
         }
 
-        foreach ($segments as $i => $segment) {
-            $this->segmentValues[$i][$segment][$routeId] = $routeId;
+        $this->addDynamicRoute($routeId, $definition);
+    }
 
-            if (!isset($this->segmentCounts[$i])) {
-                $this->segmentCounts[$i] = [];
+    /**
+     * Adds matching rules for a static route.
+     * @param int $routeId Id of the route
+     * @param RouteDefinition $definition The definitions for the route
+     */
+    private function addStaticRoute(int $routeId, RouteDefinition $definition): void
+    {
+        $path = implode('/', $definition->getSegments());
+
+        foreach ($definition->getMethods() as $method) {
+            if (isset($this->staticRoutes[$method][$path])) {
+                throw new \InvalidArgumentException("A static route '$method $path' already exists");
             }
-        }
 
-        $this->segmentCounts[\count($segments)][$routeId] = $routeId;
+            $this->staticRoutes[$method][$path] = $routeId;
+        }
+    }
+
+    /**
+     * Adds matching rules for a dynamic route.
+     * @param int $routeId Id of the route
+     * @param RouteDefinition $definition The definitions for the route
+     */
+    private function addDynamicRoute(int $routeId, RouteDefinition $definition): void
+    {
+        foreach ($definition->getMethods() as $method) {
+            $tree = & $this->dynamicRoutes;
+
+            foreach (array_merge([$method], $definition->getSegments()) as $segment) {
+                if (!isset($tree[$segment])) {
+                    $tree[$segment] = [];
+                    ksort($tree);
+                }
+
+                $tree = & $tree[$segment];
+            }
+
+            $tree[''][$routeId] = true;
+        }
     }
 
     /**
@@ -82,16 +102,14 @@ class RouteDefinitionProvider
         }
 
         $statics = $encoder($this->staticRoutes);
-        $counts = $encoder($this->segmentCounts);
-        $values = $encoder($this->segmentValues);
+        $dynamics = $encoder($this->dynamicRoutes);
         $definitions = $encoder($this->routeDefinitions);
         $names = $encoder($this->routesByName);
 
         return <<<TEMPLATE
 <?php return new class extends \Simply\Router\RouteDefinitionProvider {
     protected \$staticRoutes = $statics;
-    protected \$segmentCounts = $counts;
-    protected \$segmentValues = $values;
+    protected \$dynamicRoutes = $dynamics;
     protected \$routeDefinitions = $definitions;
     protected \$routesByName = $names;
 };
@@ -110,24 +128,78 @@ TEMPLATE;
     }
 
     /**
-     * Returns route ids with specific segment count.
-     * @param int $count The number of segments in the path
-     * @return int[] List of route ids with specific segment count
+     * Return list of route ids that match for the given path regardless of request method.
+     * @param string $path The static route path to search
+     * @return int[] List of route ids that match the given static path
      */
-    public function getRoutesBySegmentCount(int $count): array
+    public function getMatchingStaticRoutes(string $path): array
     {
-        return $this->segmentCounts[$count] ?? [];
+        $routes = [];
+
+        foreach ($this->staticRoutes as $method => $_) {
+            $routeId = $this->getStaticRoute($method, $path);
+
+            if ($routeId !== null) {
+                $routes[$routeId] = true;
+            }
+        }
+
+        return array_keys($routes);
     }
 
     /**
-     * Returns route ids with specific value for specific segment.
-     * @param int $segment The number of the segment
-     * @param string $value The value for the segment or '/' dynamic segments
-     * @return int[] List of route ids the match the given criteria
+     * Returns list of route ids that match the given request method and given segments.
+     * @param string $method The http method for the dynamic route
+     * @param string[] $segments Segments to search
+     * @return int[] List of route ids that match the request method and segments
      */
-    public function getRoutesBySegmentValue(int $segment, string $value): array
+    public function getDynamicRoutes(string $method, array $segments): array
     {
-        return $this->segmentValues[$segment][$value] ?? [];
+        $nextForks = [$this->dynamicRoutes[$method] ?? []];
+
+        foreach ($segments as $segment) {
+            $forks = $nextForks;
+            $nextForks = [];
+
+            foreach ($forks as $fork) {
+                if (isset($fork[$segment])) {
+                    $nextForks[] = $fork[$segment];
+                }
+                if (isset($fork[RouteDefinition::DYNAMIC_SEGMENT])) {
+                    $nextForks[] = $fork[RouteDefinition::DYNAMIC_SEGMENT];
+                }
+            }
+
+            if (empty($nextForks)) {
+                return [];
+            }
+        }
+
+        $routes = [];
+
+        foreach ($nextForks as $fork) {
+            if (isset($fork[''])) {
+                $routes += $fork[''];
+            }
+        }
+
+        return array_keys($routes);
+    }
+
+    /**
+     * Returns all route ids for dynamic routes that match the given segments regardless of request method.
+     * @param string[] $segments Path segments to match against
+     * @return int[] List of dynamic route ids that match the given segments
+     */
+    public function getMatchingDynamicRoutes(array $segments): array
+    {
+        $routes = [];
+
+        foreach ($this->dynamicRoutes as $method => $_) {
+            $routes += array_flip($this->getDynamicRoutes($method, $segments));
+        }
+
+        return array_keys($routes);
     }
 
     /**

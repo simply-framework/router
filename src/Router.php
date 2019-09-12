@@ -16,9 +16,6 @@ class Router
     /** @var RouteDefinitionProvider The route definition provider */
     private $provider;
 
-    /** @var string[] List of methods that would be allowed for the routed path */
-    private $allowedMethods;
-
     /**
      * Router constructor.
      * @param RouteDefinitionProvider $provider The route definition provider
@@ -26,7 +23,6 @@ class Router
     public function __construct(RouteDefinitionProvider $provider)
     {
         $this->provider = $provider;
-        $this->allowedMethods = [];
     }
 
     /**
@@ -46,29 +42,30 @@ class Router
             return new Route($this->provider->getRouteDefinition($static), $method, $segments, []);
         }
 
-        if (!HttpMethod::isValid($method)) {
-            throw new \InvalidArgumentException("Invalid HTTP method '$method'");
-        }
-
-        $this->allowedMethods = [];
         $routes = $this->matchRoutes($method, $segments);
 
         if (\count($routes) === 1) {
             return $routes[0];
         }
 
-        if (\count($routes) !== 0) {
+        if (\count($routes) > 1) {
             throw new \UnexpectedValueException("The given path '$path' matches more than one route");
         }
 
-        if (\count($this->allowedMethods) > 0) {
-            if (\in_array(HttpMethod::GET, $this->allowedMethods, true)) {
-                $this->allowedMethods[] = HttpMethod::HEAD;
-            }
+        if ($method === 'HEAD') {
+            return $this->route('GET', $path)->withRequestMethod('HEAD');
+        }
 
+        if (!HttpMethod::isValid($method)) {
+            throw new \InvalidArgumentException("Invalid HTTP method '$method'");
+        }
+
+        $allowedMethods = $this->detectAllowedMethods($segments);
+
+        if (\count($allowedMethods) > 0) {
             throw new MethodNotAllowedException(
                 "The requested method '$method' is not within list of allowed methods",
-                array_values(array_intersect(HttpMethod::getAll(), $this->allowedMethods))
+                $allowedMethods
             );
         }
 
@@ -87,44 +84,10 @@ class Router
             return [];
         }
 
-        $matchedIds = $this->getDynamicRouteIds($segments);
-        return $this->getMatchingRoutes($matchedIds, $method, $segments);
-    }
-
-    /**
-     * Returns a list of route ids for dynamic routes that have matching static path segments.
-     * @param string[] $segments The requested path segments
-     * @return int[] List of route ids for dynamic routes that have matching static path segments
-     */
-    private function getDynamicRouteIds(array $segments): array
-    {
-        $matched = [];
-        $index = 0;
-
-        do {
-            $matched[] =
-                $this->provider->getRoutesBySegmentValue($index, $segments[$index]) +
-                $this->provider->getRoutesBySegmentValue($index, RouteDefinition::DYNAMIC_SEGMENT);
-            $index++;
-        } while (isset($segments[$index]));
-
-        $matched[] = $this->provider->getRoutesBySegmentCount(\count($segments));
-
-        return array_values(array_intersect_key(... $matched));
-    }
-
-    /**
-     * Returns the routes for the given ids that match the requested method and segments.
-     * @param int[] $ids List of route ids to match
-     * @param string $method The HTTP request method
-     * @param string[] $segments The requested path segments
-     * @return Route[] List of matching routes
-     */
-    private function getMatchingRoutes(array $ids, string $method, array $segments): array
-    {
+        $matchedIds = $this->provider->getDynamicRoutes($method, $segments);
         $routes = [];
 
-        foreach ($ids as $id) {
+        foreach ($matchedIds as $id) {
             $definition = $this->provider->getRouteDefinition($id);
             $values = [];
 
@@ -132,15 +95,38 @@ class Router
                 continue;
             }
 
-            if (!$definition->isMethodAllowed($method)) {
-                array_push($this->allowedMethods, ... $definition->getMethods());
-                continue;
-            }
-
             $routes[] = new Route($definition, $method, $segments, $values);
         }
 
         return $routes;
+    }
+
+    /**
+     * Return list of all request methods that would be allowed for the given segments.
+     * @param string[] $segments Segments of the requested path
+     * @return string[] List of allowed request methods for the given path segments
+     */
+    private function detectAllowedMethods(array $segments): array
+    {
+        $methods = [];
+
+        foreach ($this->provider->getMatchingStaticRoutes(implode('/', $segments)) as $routeId) {
+            array_push($methods, ... $this->provider->getRouteDefinition($routeId)->getMethods());
+        }
+
+        foreach ($this->provider->getMatchingDynamicRoutes($segments) as $routeId) {
+            $definition = $this->provider->getRouteDefinition($routeId);
+
+            if ($definition->matchPatterns($segments)) {
+                array_push($methods, ... $definition->getMethods());
+            }
+        }
+
+        if (in_array('GET', $methods, true)) {
+            $methods[] = 'HEAD';
+        }
+
+        return array_values(array_intersect(HttpMethod::getAll(), $methods));
     }
 
     /**

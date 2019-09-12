@@ -38,6 +38,18 @@ class Route
     }
 
     /**
+     * Returns a new route instance with the given request method.
+     * @param string $method The request method for the new route
+     * @return Route A new route
+     */
+    public function withRequestMethod(string $method): Route
+    {
+        $route = clone $this;
+        $route->method = $method;
+        return $route;
+    }
+
+    /**
      * Returns the requested HTTP method.
      * @return string The requested HTTP method
      */
