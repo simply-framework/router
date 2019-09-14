@@ -15,11 +15,12 @@
     }
   ],
   "require": {
-    "php": "^7.2"
+    "php": "^7.3",
+    "riimu/kit-phpencoder": "^2.4.0"
   },
   "require-dev": {
     "nikic/fast-route": "^1.3.0",
-    "phpunit/phpunit": "^7.5",
+    "phpunit/phpunit": "^8.3.4",
     "riimu/php-cs-fixer-config": "^0.1.1",
     "riimu/sami-config": "^0.1.0"
   },

@@ -2,6 +2,7 @@ build/
 vendor/
 tests/benchmark/requests.php
 tests/benchmark/routes.php
+.phpunit.result.cache
 composer.lock
 infection.json.dist
 infection-log.txt
