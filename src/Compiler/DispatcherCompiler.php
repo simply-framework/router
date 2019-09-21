@@ -38,9 +38,6 @@ class DispatcherCompiler
         $staticPaths = $this->mapStaticPaths($routes);
         $routeNodes = $this->mapRouteNodes($routes);
 
-        $this->recursiveKeySort($staticPaths);
-        $this->recursiveKeySort($routeNodes);
-
         $methodCases = $this->compileMethodCases($routeNodes);
 
         return $this->template->formatDispatcher($class, $routes, $staticPaths, $methodCases);
@@ -135,17 +132,6 @@ class DispatcherCompiler
         return $routeNodes;
     }
 
-    private function recursiveKeySort(array & $array): void
-    {
-        ksort($array);
-
-        foreach ($array as & $value) {
-            if (is_array($value)) {
-                $this->recursiveKeySort($value);
-            }
-        }
-    }
-
     /**
      * @param RouteNode[][] $routeNodes
      * @return string[]
@@ -158,7 +144,7 @@ class DispatcherCompiler
             $countCases = [];
 
             foreach ($routesByMethod as $count => $routeNode) {
-                $countCases[$count] = $this->compileRouteNode(0, $routeNode);
+                $countCases[$count] = $this->compileRouteNode($routeNode);
             }
 
             $methodCases[$method] = $this->template->formatCountSwitch($countCases);
@@ -167,7 +153,7 @@ class DispatcherCompiler
         return $methodCases;
     }
 
-    private function compileRouteNode(int $index, RouteNode $node): string
+    private function compileRouteNode(RouteNode $node): string
     {
         $routes = $node->getRoutes();
 
@@ -175,27 +161,11 @@ class DispatcherCompiler
             return $this->template->formatRoutes($routes);
         }
 
-        $staticSegments = [];
-        $dynamicSegments = [];
-        $placeholder = null;
+        $matchNodes = array_map([$this, 'compileRouteNode'], $node->getMatchNodes());
+        $skipNode = $node->getSkipNode() ? $this->compileRouteNode($node->getSkipNode()) : null;
 
-        foreach ($node->getStaticNodes() as $name => $staticNode) {
-            $staticSegments[$name] = $this->compileRouteNode($index + 1, $staticNode);
-        }
-
-        foreach ($node->getDynamicNodes() as $pattern => $dynamicNode) {
-            $dynamicSegments[$pattern] = $this->compileRouteNode($index + 1, $dynamicNode);
-        }
-
-        ksort($staticSegments);
-        uksort($dynamicSegments, static function (string $a, string $b): int {
-            return strlen($b) <=> strlen($a);
-        });
-
-        if ($node->getPlaceholderNode()) {
-            $placeholder = $this->compileRouteNode($index + 1, $node->getPlaceholderNode());
-        }
-
-        return $this->template->formatNode($index, $staticSegments, $dynamicSegments, $placeholder);
+        return $node->isStatic()
+            ? $this->template->formatStaticNode($node->getIndex(), $matchNodes, $skipNode)
+            : $this->template->formatDynamicNode($node->getIndex(), $matchNodes, $skipNode);
     }
 }

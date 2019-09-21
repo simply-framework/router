@@ -12,6 +12,7 @@ interface DispatcherTemplateInterface
 {
     public function formatDispatcher(string $class, array $routes, array $staticPaths, array $methodCases): string;
     public function formatCountSwitch(array $cases): string;
-    public function formatNode(int $index, array $staticRoutes, array $dynamicRoutes, ?string $placeholder): string;
+    public function formatStaticNode(int $index, array $static, ?string $skip): string;
+    public function formatDynamicNode(int $index, array $dynamic, ?string $skip): string;
     public function formatRoutes(array $routes): string;
 }

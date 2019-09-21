@@ -2,10 +2,7 @@
 
 namespace Simply\Router\Compiler;
 
-use Simply\Router\Collector\CollectedRoute;
-use Simply\Router\Parser\ParsedPath;
 use Simply\Router\Parser\Segment\DynamicSegment;
-use Simply\Router\Parser\Segment\PlaceholderSegment;
 use Simply\Router\Parser\Segment\SegmentInterface;
 use Simply\Router\Parser\Segment\StaticSegment;
 
@@ -17,22 +14,32 @@ use Simply\Router\Parser\Segment\StaticSegment;
  */
 class RouteNode
 {
+    private $static;
+    private $index;
     private $routes;
 
     /** @var RouteNode[] */
-    private $staticNodes;
-
-    /** @var RouteNode[] */
-    private $dynamicNodes;
+    private $matchNodes;
 
     /** @var RouteNode */
-    private $placeholderNode;
+    private $skipNode;
 
-    public function __construct()
+    public function __construct(int $index = 0, bool $static = true)
     {
+        $this->static = $static;
+        $this->index = $index;
         $this->routes = [];
-        $this->staticNodes = [];
-        $this->dynamicNodes = [];
+        $this->matchNodes = [];
+    }
+
+    public function isStatic(): bool
+    {
+        return $this->static;
+    }
+
+    public function getIndex(): int
+    {
+        return $this->index;
     }
 
     public function getRoutes(): array
@@ -40,58 +47,62 @@ class RouteNode
         return $this->routes;
     }
 
-    public function getStaticNodes(): array
+    public function getMatchNodes(): array
     {
-        return $this->staticNodes;
+        return $this->matchNodes;
     }
 
-    public function getDynamicNodes(): array
+    public function getSkipNode(): ?RouteNode
     {
-        return $this->dynamicNodes;
-    }
-
-    public function getPlaceholderNode(): ?RouteNode
-    {
-        return $this->placeholderNode;
+        return $this->skipNode;
     }
 
     public function addRoute(CompilerRoute $route): void
     {
-        $segments = $route->getPath()->getSegments();
-        $segment = array_shift($segments);
+        $static = $route->getPath()->getSegments();
+        $dynamic = $route->getPath()->isStaticPath() ? [] : $static;
+        $segment = array_shift($static);
 
         if ($segment === null) {
             $this->routes[] = $route;
         } else {
-            $this->getSegmentNode($segment)->addSubRoute($route, $segments);
+            $this->getNextNode($segment, $static !== [])->addSubRoute($route, $static, $dynamic);
         }
     }
 
-    private function addSubRoute(CompilerRoute $route, array $remainingSegments): void
+    private function addSubRoute(CompilerRoute $route, array $static, array $dynamic): void
     {
-        if ($remainingSegments === []) {
+        if ($static === [] && $dynamic === []) {
             $this->routes[] = $route;
-        } else {
-            $this->getSegmentNode(array_shift($remainingSegments))->addSubRoute($route, $remainingSegments);
+            return;
         }
+
+        $segment = $this->static ? array_shift($static) : array_shift($dynamic);
+        $node = $this->getNextNode($segment, $static !== []);
+
+        $node->addSubRoute($route, $static, $dynamic);
     }
 
-    private function getSegmentNode(SegmentInterface $segment): RouteNode
+    private function getNextNode(?SegmentInterface $segment, bool $static): RouteNode
     {
-        switch (true) {
-            case $segment instanceof StaticSegment:
-                return $this->getSubNode($this->staticNodes[$segment->getSegment()]);
-            case $segment instanceof DynamicSegment:
-                return $this->getSubNode($this->dynamicNodes[$segment->getPattern()]);
-            default:
-                return $this->getSubNode($this->placeholderNode);
+        $matcher = null;
+
+        if ($segment instanceof StaticSegment && $this->static) {
+            $matcher = $segment->getSegment();
+        } elseif ($segment instanceof DynamicSegment && !$this->static) {
+            $matcher = $segment->getPattern();
         }
+
+        return $matcher === null
+            ? $this->getSubNode($this->skipNode, $static)
+            : $this->getSubNode($this->matchNodes[$matcher], $static);
     }
 
-    private function getSubNode(& $variable): RouteNode
+    private function getSubNode(& $variable, bool $static): RouteNode
     {
         if (!isset($variable)) {
-            $variable = new RouteNode();
+            $nextIndex = $this->static === $static ? $this->index + 1 : 0;
+            $variable = new RouteNode($nextIndex, $static);
         }
 
         return $variable;

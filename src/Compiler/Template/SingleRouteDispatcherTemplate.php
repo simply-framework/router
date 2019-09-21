@@ -96,20 +96,13 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
             PHP;
     }
 
-    private function compileDispatcherCase(array $staticPaths, string $switchMatcher): string
+    private function compileDispatcherCase(array $statics, string $nodes): string
     {
-        $caseLines = [];
-
-        if ($staticPaths !== []) {
-            $caseLines[] = $this->compileSwitch('$path', array_map(function (array $routes): string {
-                return $this->formatRoutes($routes);
-            }, $staticPaths));
-        }
-
-        $caseLines[] = '$segments = \preg_split(\'#/#\', $path, -1, \PREG_SPLIT_NO_EMPTY);';
-        $caseLines[] = $switchMatcher;
-
-        return implode("\n\n", $caseLines);
+        return $this->appendLines([
+            $statics ? $this->compileSwitch('$path', array_map([$this, 'formatRoutes'], $statics)) : null,
+            '$segments = \preg_split(\'#/#\', $path, -1, \PREG_SPLIT_NO_EMPTY);',
+            $nodes
+        ]);
     }
 
     public function formatCountSwitch(array $cases): string
@@ -117,23 +110,20 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
         return $this->compileSwitch('\count($segments)', $cases);
     }
 
-    public function formatNode(int $index, array $staticSegments, array $dynamicSegments, ?string $placeholder): string
+    public function formatStaticNode(int $index, array $static, ?string $skip): string
     {
-        $compiled = [];
+        return $this->appendLines([
+            $static ? $this->compileSwitch("\$segments[$index]", $static) : null,
+            $skip,
+        ]);
+    }
 
-        if ($staticSegments) {
-            $compiled[] = $this->compileSwitch("\$segments[$index]", $staticSegments);
-        }
-
-        if ($dynamicSegments) {
-            $compiled[] = $this->compiledDynamicSegments($index, $dynamicSegments);
-        }
-
-        if ($placeholder !== null) {
-            $compiled[] = $placeholder;
-        }
-
-        return implode("\n\n", $compiled);
+    public function formatDynamicNode(int $index, array $dynamic, ?string $skip): string
+    {
+        return $this->appendLines([
+            $dynamic ? $this->compiledDynamicSegments($index, $dynamic) : null,
+            $skip,
+        ]);
     }
 
     protected function compiledDynamicSegments(int $index, array $dynamicSegments): string
@@ -168,7 +158,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
                 $clauses[] = $this->compilePatternMatch($pattern, $index);
             }
 
-            $clause = implode(" ||\n    ", $clauses);
+            $clause = sprintf("\n    %s\n", $this->addIndent(implode(" ||\n", $clauses)));
         }
 
         $switch = $this->addIndent($this->compileSwitch("\$match[$index]['MARK']", $cases));
@@ -242,6 +232,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
     private function compileSwitch(string $condition, array $cases): string
     {
+        ksort($cases);
         $compiled = [];
 
         foreach ($cases as $value => $code) {
@@ -269,6 +260,11 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
                 $compiledCases
             }
             PHP;
+    }
+
+    private function appendLines(array $lines): string
+    {
+        return implode("\n\n", array_filter($lines));
     }
 
     protected function addIndent(string $code): string
