@@ -122,7 +122,7 @@ class Router
             }
         }
 
-        if (in_array('GET', $methods, true)) {
+        if (\in_array('GET', $methods, true)) {
             $methods[] = 'HEAD';
         }
 

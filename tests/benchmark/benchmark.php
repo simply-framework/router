@@ -7,7 +7,7 @@ use Simply\Router\RouteDefinition;
 use Simply\Router\RouteDefinitionProvider;
 use Simply\Router\Router;
 
-error_reporting(E_ALL);
+error_reporting(\E_ALL);
 set_error_handler(function ($severity, $message, $file, $line) {
     throw new ErrorException($message, 0, $severity, $file, $line);
 });
@@ -34,7 +34,7 @@ $sets = [
         ],
         'routes' => [
             ['GET', '/{name}/', 'route-a'],
-        ]
+        ],
     ], //*/
     //*
     [
@@ -58,7 +58,7 @@ $sets = [
             ['GET', '/{name}/identity/', 'route-c'],
             ['GET', '/{name}/gallery/{id:\d+}/add/', 'route-d'],
             ['GET', '/{name}/gallery/{id:\d+}/', 'route-e'],
-        ]
+        ],
     ], //*/
     //*
     [
@@ -121,15 +121,15 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
     }, $requests, $runtime);
 
     echo $formatResult('FastRoute', $fastCount, $runtime) . "\n";
-/*
-    $provider = new RouteDefinitionProvider();
-
-    foreach ($routes as $key => [$method, $path, $handler]) {
-        $provider->addRouteDefinition(new RouteDefinition("route-$key", [$method], $path, $handler));
-    }
-
-    $router = new Router($provider);
-*/
+    /*
+        $provider = new RouteDefinitionProvider();
+    
+        foreach ($routes as $key => [$method, $path, $handler]) {
+            $provider->addRouteDefinition(new RouteDefinition("route-$key", [$method], $path, $handler));
+        }
+    
+        $router = new Router($provider);
+    */
 
     $collector = new \Simply\Router\Collector\RouteCollector();
 

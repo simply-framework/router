@@ -42,8 +42,8 @@ class Placeholder
         try {
             $result = preg_match("/$pattern/", '');
 
-            if ($result === false || preg_last_error() !== PREG_NO_ERROR) {
-                $error = current(preg_grep('/^PREG_/', array_keys(get_defined_constants(), preg_last_error())));
+            if ($result === false || preg_last_error() !== \PREG_NO_ERROR) {
+                $error = current(preg_grep('/^PREG_/', array_keys(get_defined_constants(), preg_last_error(), true)));
             }
         } catch (\ErrorException $exception) {
             $error = $exception->getMessage();

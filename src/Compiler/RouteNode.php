@@ -52,7 +52,7 @@ class RouteNode
         return $this->matchNodes;
     }
 
-    public function getSkipNode(): ?RouteNode
+    public function getSkipNode(): ?self
     {
         return $this->skipNode;
     }
@@ -83,7 +83,7 @@ class RouteNode
         $node->addSubRoute($route, $static, $dynamic);
     }
 
-    private function getNextNode(?SegmentInterface $segment, bool $static): RouteNode
+    private function getNextNode(?SegmentInterface $segment, bool $static): self
     {
         $matcher = null;
 
@@ -98,11 +98,11 @@ class RouteNode
             : $this->getSubNode($this->matchNodes[$matcher], $static);
     }
 
-    private function getSubNode(& $variable, bool $static): RouteNode
+    private function getSubNode(& $variable, bool $static): self
     {
         if (!isset($variable)) {
             $nextIndex = $this->static === $static ? $this->index + 1 : 0;
-            $variable = new RouteNode($nextIndex, $static);
+            $variable = new self($nextIndex, $static);
         }
 
         return $variable;

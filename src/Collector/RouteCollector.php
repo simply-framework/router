@@ -23,7 +23,7 @@ class RouteCollector
 
     public function request($method, string $path, $handler, string $name = null): self
     {
-        $this->routes[] = new CollectedRoute(is_array($method) ? $method : [$method], $path, $handler, $name);
+        $this->routes[] = new CollectedRoute(\is_array($method) ? $method : [$method], $path, $handler, $name);
 
         return $this;
     }

@@ -11,7 +11,10 @@ namespace Simply\Router\Parser\Segment;
 interface SegmentInterface
 {
     public function getNormalizedPath(): string;
+
     public function getNames(): array;
+
     public function getFormat(): string;
+
     public function isDynamic(): bool;
 }

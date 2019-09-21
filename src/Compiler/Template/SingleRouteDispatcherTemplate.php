@@ -101,7 +101,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
         return $this->appendLines([
             $statics ? $this->compileSwitch('$path', array_map([$this, 'formatRoutes'], $statics)) : null,
             '$parts = \preg_split(\'#/#\', $path, -1, \PREG_SPLIT_NO_EMPTY);',
-            $nodes
+            $nodes,
         ]);
     }
 
@@ -128,7 +128,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
     protected function compiledDynamicSegments(int $index, array $dynamicSegments): string
     {
-        if (count($dynamicSegments) === 1) {
+        if (\count($dynamicSegments) === 1) {
             $condition = $this->compilePatternMatch(key($dynamicSegments), $index);
             $code = $this->addIndent(current($dynamicSegments));
 
@@ -149,7 +149,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
         $combined = $this->combinePatterns($patterns);
 
-        if (count($combined) === 1) {
+        if (\count($combined) === 1) {
             $clause = $this->compilePatternMatch(current($combined), $index);
         } else {
             $clauses = [];
@@ -202,7 +202,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
      */
     public function formatRoutes(array $routes): string
     {
-        if (count($routes) !== 1) {
+        if (\count($routes) !== 1) {
             throw new \InvalidArgumentException('Multiple identical routes are not supported by the template');
         }
 
@@ -232,7 +232,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
     private function compileSwitch(string $condition, array $cases): string
     {
-        if (count($cases) === 1) {
+        if (\count($cases) === 1) {
             $value = $this->encoder->encode(key($cases));
             $code = $this->addIndent(current($cases));
 

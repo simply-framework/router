@@ -96,7 +96,7 @@ class RoutingTest extends TestCase
                     ['GET', '/foobar/path/', 'A', '/foobar/path/', ['param' => 'foobar']],
                     ['GET', '/param/foobar/', 'B', '/param/foobar/', ['path' => 'foobar']],
                     ['GET', '/param/path/route/', 'C', '/param/path/route/', ['param' => 'param', 'path' => 'path']],
-                ]
+                ],
             ],
             'Test pattern segments in routes' => [
                 [
@@ -106,7 +106,7 @@ class RoutingTest extends TestCase
                 [
                     ['GET', '/path/123/', 'A', '/path/123/', ['id' => '123']],
                     ['GET', '/path/cafefeed/', 'B', '/path/cafefeed/', ['id' => 'cafefeed']],
-                ]
+                ],
             ],
             'Test multiple placeholders in single segment' => [
                 [
@@ -127,7 +127,7 @@ class RoutingTest extends TestCase
                         'paramA' => 'foo',
                         'paramB' => 'bar',
                     ]],
-                ]
+                ],
             ],
             'Test correct order of priority' => [
                 [
@@ -139,7 +139,7 @@ class RoutingTest extends TestCase
                     ['GET', '/path/', 'A', '/path/'],
                     ['GET', '/foobar/', 'B', '/foobar/', ['param' => 'foobar']],
                     ['GET', '/123456/', 'C', '/123456/', ['param' => '123456']],
-                ]
+                ],
             ],
             'Test proper fall through for routes' => [
                 [
@@ -153,7 +153,7 @@ class RoutingTest extends TestCase
                     ['GET', '/first/second/123abc/', 'B', '/first/second/123abc/', ['id' => '123abc']],
                     ['GET', '/first/123/third/', 'C', '/first/123/third/', ['param' => '123']],
                     ['GET', '/first/foobar/third/', 'D', '/first/foobar/third/', ['param' => 'foobar']],
-                ]
+                ],
             ],
         ];
     }

@@ -121,7 +121,7 @@ class DispatcherCompiler
 
         foreach ($routes as $route) {
             $segments = $route->getPath()->getSegments();
-            $count = count($segments);
+            $count = \count($segments);
 
             foreach ($route->getRoute()->getMethods() as $method) {
                 if (!isset($routeNodes[$method][$count])) {

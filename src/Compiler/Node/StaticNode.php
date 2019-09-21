@@ -51,7 +51,7 @@ class StaticNode implements NodeInterface
 
     public function addSubRoute(CompilerRoute $route, array $static, array $dynamic): void
     {
-        if (count($static) < 1) {
+        if (\count($static) < 1) {
             throw new \InvalidArgumentException('Unexpected number of static segments in the provided route');
         }
 
@@ -74,7 +74,7 @@ class StaticNode implements NodeInterface
     {
         if (!isset($variable)) {
             if ($type === self::class) {
-                $variable = new StaticNode($this->index + 1);
+                $variable = new self($this->index + 1);
             } elseif ($type === DynamicNode::class) {
                 $variable = new DynamicNode();
             } else {

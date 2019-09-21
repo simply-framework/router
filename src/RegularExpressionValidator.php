@@ -24,8 +24,8 @@ class RegularExpressionValidator
         try {
             $result = preg_match($pattern, '');
 
-            if ($result === false || preg_last_error() !== PREG_NO_ERROR) {
-                return current(preg_grep('/^PREG_/', array_keys(get_defined_constants(), preg_last_error())));
+            if ($result === false || preg_last_error() !== \PREG_NO_ERROR) {
+                return current(preg_grep('/^PREG_/', array_keys(get_defined_constants(), preg_last_error(), true)));
             }
         } catch (\Throwable $exception) {
             return preg_replace('/^.*?preg_match\(\): /', '', $exception->getMessage());

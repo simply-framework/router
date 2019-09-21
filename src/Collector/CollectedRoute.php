@@ -21,7 +21,7 @@ class CollectedRoute
     {
         $this->methods = array_values(array_intersect(DispatcherInterface::HTTP_METHODS, $methods));
 
-        if (count($this->methods) !== count($methods)) {
+        if (\count($this->methods) !== \count($methods)) {
             throw new \InvalidArgumentException('Invalid list of HTTP methods: ' . implode(', ', $methods));
         }
 

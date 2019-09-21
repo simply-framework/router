@@ -42,7 +42,7 @@ class Route
      * @param string $method The request method for the new route
      * @return Route A new route
      */
-    public function withRequestMethod(string $method): Route
+    public function withRequestMethod(string $method): self
     {
         $route = clone $this;
         $route->method = $method;

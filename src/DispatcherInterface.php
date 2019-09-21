@@ -28,6 +28,7 @@ interface DispatcherInterface
     public const METHOD_NOT_ALLOWED = 2;
 
     public function dispatch(string $method, string $path): array;
+
     public function format(string $name, array $parameters = []): string;
 
     /**

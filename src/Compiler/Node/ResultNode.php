@@ -47,11 +47,10 @@ class ResultNode implements NodeInterface
 
     public function addSubRoute(CompilerRoute $route, array $static, array $dynamic): void
     {
-        if (count($static) !== 0 || count($dynamic) !== 0) {
+        if (\count($static) !== 0 || \count($dynamic) !== 0) {
             throw new \InvalidArgumentException('Unexpected number of segments in the provided route');
         }
 
         $this->results[] = $route;
     }
 }
-

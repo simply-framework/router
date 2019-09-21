@@ -49,7 +49,7 @@ class DynamicNode implements NodeInterface
 
     public function addSubRoute(CompilerRoute $route, array $static, array $dynamic): void
     {
-        if (count($dynamic) < 1) {
+        if (\count($dynamic) < 1) {
             throw new \InvalidArgumentException('Unexpected number of dynamic segments in the provided route');
         }
 
@@ -68,7 +68,7 @@ class DynamicNode implements NodeInterface
     {
         if (!isset($variable)) {
             if ($type === self::class) {
-                $variable = new DynamicNode($this->index + 1);
+                $variable = new self($this->index + 1);
             } else {
                 $variable = new ResultNode();
             }

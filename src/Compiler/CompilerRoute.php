@@ -4,7 +4,6 @@ namespace Simply\Router\Compiler;
 
 use Simply\Router\Collector\CollectedRoute;
 use Simply\Router\Parser\ParsedPath;
-use Simply\Router\Parser\Segment\SegmentInterface;
 
 /**
  * CompilerPath.

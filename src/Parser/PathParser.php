@@ -48,10 +48,10 @@ class PathParser
             return new StaticSegment($segment, $this->encodeFormatString($segment));
         }
 
-        if (count($placeholders) === 1) {
+        if (\count($placeholders) === 1) {
             $placeholder = reset($placeholders);
 
-            if ($placeholder->hasSimplePattern() && $placeholder->getLength() === strlen($segment)) {
+            if ($placeholder->hasSimplePattern() && $placeholder->getLength() === \strlen($segment)) {
                 return new PlaceholderSegment($placeholder->getName());
             }
         }
@@ -80,13 +80,12 @@ class PathParser
                 $match['name'][0],
                 $match['pattern'][0] ?? null,
                 $match[0][1],
-                strlen($match[0][0])
+                \strlen($match[0][0])
             );
         }
 
         return $placeholders;
     }
-
 
     /**
      * @param string $segment

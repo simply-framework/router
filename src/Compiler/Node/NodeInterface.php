@@ -13,8 +13,12 @@ use Simply\Router\Compiler\CompilerRoute;
 interface NodeInterface
 {
     public function getIndex(): int;
+
     public function getMatchingNodes(): array;
-    public function getFallThroughNode(): ?NodeInterface;
+
+    public function getFallThroughNode(): ?self;
+
     public function addRoute(CompilerRoute $route): void;
+
     public function addSubRoute(CompilerRoute $route, array $static, array $dynamic): void;
 }
