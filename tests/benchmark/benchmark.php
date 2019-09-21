@@ -16,7 +16,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 $runtime = 1.0;
 $sets = [
-    /*
+    //*
     [
         'name' => 'Empty Route',
         'requests' => [
@@ -26,7 +26,7 @@ $sets = [
             ['GET', '/', 'handler'],
         ],
     ], //*/
-    /*
+    //*
     [
         'name' => 'Single Placeholder path',
         'requests' => [
@@ -36,7 +36,7 @@ $sets = [
             ['GET', '/{name}/', 'route-a'],
         ]
     ], //*/
-    /*
+    //*
     [
         'name' => 'Placeholder in middle',
         'requests' => [
@@ -46,7 +46,7 @@ $sets = [
             ['GET', '/foo/{id}/bar', 'handler'],
         ],
     ], //*/
-    /*
+    //*
     [
         'name' => 'Complex Scenario',
         'requests' => [

@@ -4,6 +4,9 @@ namespace Simply\Router\Compiler;
 
 use Simply\Router\Collector\CollectedRoute;
 use Simply\Router\Collector\RouteCollector;
+use Simply\Router\Compiler\Node\NodeInterface;
+use Simply\Router\Compiler\Node\ResultNode;
+use Simply\Router\Compiler\Node\StaticNode;
 use Simply\Router\Compiler\Template\DispatcherTemplateInterface;
 use Simply\Router\Compiler\Template\SingleRouteDispatcherTemplate;
 use Simply\Router\Parser\PathParser;
@@ -109,11 +112,11 @@ class DispatcherCompiler
 
     /**
      * @param CompilerRoute[] $routes
-     * @return RouteNode[][]
+     * @return NodeInterface[][]
      */
     private function mapRouteNodes(array $routes): array
     {
-        /** @var RouteNode[][] $routeNodes */
+        /** @var NodeInterface[][] $routeNodes */
         $routeNodes = [];
 
         foreach ($routes as $route) {
@@ -122,7 +125,7 @@ class DispatcherCompiler
 
             foreach ($route->getRoute()->getMethods() as $method) {
                 if (!isset($routeNodes[$method][$count])) {
-                    $routeNodes[$method][$count] = new RouteNode();
+                    $routeNodes[$method][$count] = $count === 0 ? new ResultNode() : new StaticNode();
                 }
 
                 $routeNodes[$method][$count]->addRoute($route);
@@ -133,7 +136,7 @@ class DispatcherCompiler
     }
 
     /**
-     * @param RouteNode[][] $routeNodes
+     * @param NodeInterface[][] $routeNodes
      * @return string[]
      */
     private function compileMethodCases(array $routeNodes): array
@@ -153,18 +156,16 @@ class DispatcherCompiler
         return $methodCases;
     }
 
-    private function compileRouteNode(RouteNode $node): string
+    private function compileRouteNode(NodeInterface $node): string
     {
-        $routes = $node->getRoutes();
-
-        if ($routes) {
-            return $this->template->formatRoutes($routes);
+        if ($node instanceof ResultNode) {
+            return $this->template->formatRoutes($node->getResults());
         }
 
-        $matchNodes = array_map([$this, 'compileRouteNode'], $node->getMatchNodes());
-        $skipNode = $node->getSkipNode() ? $this->compileRouteNode($node->getSkipNode()) : null;
+        $matchNodes = array_map([$this, 'compileRouteNode'], $node->getMatchingNodes());
+        $skipNode = $node->getFallThroughNode() ? $this->compileRouteNode($node->getFallThroughNode()) : null;
 
-        return $node->isStatic()
+        return $node instanceof StaticNode
             ? $this->template->formatStaticNode($node->getIndex(), $matchNodes, $skipNode)
             : $this->template->formatDynamicNode($node->getIndex(), $matchNodes, $skipNode);
     }

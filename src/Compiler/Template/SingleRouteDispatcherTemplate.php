@@ -100,20 +100,20 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
     {
         return $this->appendLines([
             $statics ? $this->compileSwitch('$path', array_map([$this, 'formatRoutes'], $statics)) : null,
-            '$segments = \preg_split(\'#/#\', $path, -1, \PREG_SPLIT_NO_EMPTY);',
+            '$parts = \preg_split(\'#/#\', $path, -1, \PREG_SPLIT_NO_EMPTY);',
             $nodes
         ]);
     }
 
     public function formatCountSwitch(array $cases): string
     {
-        return $this->compileSwitch('\count($segments)', $cases);
+        return $this->compileSwitch('\count($parts)', $cases);
     }
 
     public function formatStaticNode(int $index, array $static, ?string $skip): string
     {
         return $this->appendLines([
-            $static ? $this->compileSwitch("\$segments[$index]", $static) : null,
+            $static ? $this->compileSwitch("\$parts[$index]", $static) : null,
             $skip,
         ]);
     }
@@ -172,7 +172,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
     protected function compilePatternMatch(string $pattern, int $index): string
     {
-        return sprintf('\preg_match(%s, $segments[%d], $match[%2$d])', $this->encoder->encode($pattern), $index);
+        return sprintf('\preg_match(%s, $parts[%d], $match[%2$d])', $this->encoder->encode($pattern), $index);
     }
 
     private function combinePatterns(array $patterns): array
@@ -207,7 +207,7 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
         }
 
         $returnFormat = 'return [%d, %s, [%s], %s];';
-        $placeholderFormat = '%s => $segments[%d]';
+        $placeholderFormat = '%s => $parts[%d]';
         $dynamicFormat = '%s => $match[%d][%1$s]';
 
         $route = array_shift($routes);
@@ -232,14 +232,26 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
 
     private function compileSwitch(string $condition, array $cases): string
     {
+        if (count($cases) === 1) {
+            $value = $this->encoder->encode(key($cases));
+            $code = $this->addIndent(current($cases));
+
+            return <<<PHP
+                if ($condition === $value) {
+                    $code
+                }
+                PHP;
+        }
+
         ksort($cases);
         $compiled = [];
+        $last = array_key_last($cases);
 
-        foreach ($cases as $value => $code) {
-            $value = $this->encoder->encode($value);
+        foreach ($cases as $case => $code) {
+            $value = $this->encoder->encode($case);
             $code = $this->addIndent($code);
 
-            if (preg_match('/^\s*return\s/', $code)) {
+            if ($case === $last || substr($code, -2) === '];') {
                 $compiled[] = <<<PHP
                     case $value:
                         $code

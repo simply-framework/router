@@ -140,7 +140,21 @@ class RoutingTest extends TestCase
                     ['GET', '/foobar/', 'B', '/foobar/', ['param' => 'foobar']],
                     ['GET', '/123456/', 'C', '/123456/', ['param' => '123456']],
                 ]
-            ]
+            ],
+            'Test proper fall through for routes' => [
+                [
+                    ['GET', '/first/second/{id:\d+}/', 'A'],
+                    ['GET', '/first/second/{id:[\da-f]+}/', 'B'],
+                    ['GET', '/first/{param:\d+}/third/', 'C'],
+                    ['GET', '/first/{param}/third/', 'D'],
+                ],
+                [
+                    ['GET', '/first/second/123/', 'A', '/first/second/123/', ['id' => '123']],
+                    ['GET', '/first/second/123abc/', 'B', '/first/second/123abc/', ['id' => '123abc']],
+                    ['GET', '/first/123/third/', 'C', '/first/123/third/', ['param' => '123']],
+                    ['GET', '/first/foobar/third/', 'D', '/first/foobar/third/', ['param' => 'foobar']],
+                ]
+            ],
         ];
     }
 
