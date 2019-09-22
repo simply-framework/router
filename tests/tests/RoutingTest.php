@@ -199,6 +199,16 @@ class RoutingTest extends TestCase
                     ['GET', '/multilevel/optionalother/path/', 'D', '/multilevel/optionalother/path/'],
                 ],
             ],
+            'Test placeholder in optional route' => [
+                [
+                    ['GET', '/forgot_password[/[{token}[/]]]', 'A'],
+                ],
+                [
+                    ['GET', '/forgot_password/', 'A', '/forgot_password'],
+                    ['GET', '/forgot_password/abcdefg', 'A', '/forgot_password/abcdefg', ['token' => 'abcdefg']],
+                ],
+
+            ]
         ];
     }
 

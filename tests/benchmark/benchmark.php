@@ -16,7 +16,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 
 $runtime = 1.0;
 $sets = [
-    //*
+    /*
     [
         'name' => 'Empty Route',
         'requests' => [
@@ -26,7 +26,7 @@ $sets = [
             ['GET', '/', 'handler'],
         ],
     ], //*/
-    //*
+    /*
     [
         'name' => 'Single Placeholder path',
         'requests' => [
@@ -36,7 +36,7 @@ $sets = [
             ['GET', '/{name}/', 'route-a'],
         ],
     ], //*/
-    //*
+    /*
     [
         'name' => 'Placeholder in middle',
         'requests' => [
@@ -46,7 +46,7 @@ $sets = [
             ['GET', '/foo/{id}/bar', 'handler'],
         ],
     ], //*/
-    //*
+    /*
     [
         'name' => 'Complex Scenario',
         'requests' => [
@@ -116,7 +116,7 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
         }
     });
 
-    $fastCount = $benchmark(function (string $method, string $uri) use ($dispatcher): string {
+    $fastCount = $benchmark(function (string $method, string $uri) use ($dispatcher) {
         return $dispatcher->dispatch($method, $uri)[1];
     }, $requests, $runtime);
 
@@ -136,7 +136,7 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
 
     $router = new $className();
 
-    $count = $benchmark(function (string $method, string $uri) use ($router): string {
+    $count = $benchmark(function (string $method, string $uri) use ($router) {
         return $router->dispatch($method, $uri)[1];
     }, $requests, $runtime);
 

@@ -37,12 +37,10 @@ class OptionalParser
             }
 
             if ($token === '[') {
-                foreach ($this->parseForks(false) as $new) {
-                    if ($new === '') {
-                        continue;
-                    }
+                $newPaths = array_filter($this->parseForks(false), '\strlen');
 
-                    foreach ($paths as $old) {
+                foreach ($paths as $old) {
+                    foreach ($newPaths as $new) {
                         $paths[] = $old . $new;
                     }
                 }
