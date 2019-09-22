@@ -15,6 +15,8 @@ use Simply\Router\Parser\Segment\StaticSegment;
  */
 class PathParser
 {
+    public const PLACEHOLDER_PATTERN = "/\{(?'name'[a-z0-9_]++)(?::(?'pattern'(?:[^{}]++|\{(?&pattern)\})++))?\}/i";
+
     public function parse(string $path): ParsedPath
     {
         $names = [];

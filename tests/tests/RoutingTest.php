@@ -14,6 +14,22 @@ use Simply\Router\Compiler\DispatcherCompiler;
  */
 class RoutingTest extends TestCase
 {
+    private $tempFiles;
+
+    protected function setUp(): void
+    {
+        $this->tempFiles = [];
+    }
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempFiles as $filename) {
+            if (file_exists($filename)) {
+                unlink($filename);
+            }
+        }
+    }
+
     /**
      * @dataProvider getSuccessfulRoutingTests
      */
@@ -155,6 +171,34 @@ class RoutingTest extends TestCase
                     ['GET', '/first/foobar/third/', 'D', '/first/foobar/third/', ['param' => 'foobar']],
                 ],
             ],
+            'Test Optional Segments' => [
+                [
+                    ['GET', '/path[/to/route[/]]', 'A'],
+                    ['GET', '/list/[{id:[\da-f]+}/]', 'B'],
+                    ['GET', '/middle[/optional]/segment', 'C'],
+                    ['GET', '/multi[level[/optional][other]]/[path/]', 'D'],
+                ],
+                [
+                    ['GET', '/path', 'A', '/path'],
+                    ['GET', '/path/to/route', 'A', '/path/to/route'],
+                    ['GET', '/list', 'B', '/list/'],
+                    ['GET', '/list/123abc', 'B', '/list/123abc/', ['id' => '123abc']],
+                    ['GET', '/middle/segment', 'C', '/middle/segment'],
+                    ['GET', '/middle/optional/segment', 'C', '/middle/optional/segment'],
+                    ['GET', '/multi', 'D', '/multi/'],
+                    ['GET', '/multilevel', 'D', '/multilevel/'],
+                    ['GET', '/multilevel/optional', 'D', '/multilevel/optional/'],
+                    ['GET', '/multilevel/optionalother', 'D', '/multilevel/optionalother/'],
+                    ['GET', '/multilevelother', 'D', '/multilevelother/'],
+                    ['GET', '/multilevel/optionalother', 'D', '/multilevel/optionalother/'],
+                    ['GET', '/multi/path/', 'D', '/multi/path/'],
+                    ['GET', '/multilevel/path/', 'D', '/multilevel/path/'],
+                    ['GET', '/multilevel/optional/path/', 'D', '/multilevel/optional/path/'],
+                    ['GET', '/multilevel/optionalother/path/', 'D', '/multilevel/optionalother/path/'],
+                    ['GET', '/multilevelother/path/', 'D', '/multilevelother/path/'],
+                    ['GET', '/multilevel/optionalother/path/', 'D', '/multilevel/optionalother/path/'],
+                ],
+            ],
         ];
     }
 
@@ -172,7 +216,13 @@ class RoutingTest extends TestCase
         $this->assertSame(DispatcherInterface::FOUND, $result[0]);
         $this->assertSame("handler.$expectedHandler", $result[1]);
         $this->assertSame($expectedParameters, $result[2]);
-        $this->assertSame("name.$expectedHandler", $result[3]);
+
+        if (strpos($result[3], '.') !== false) {
+            $this->assertSame("name.$expectedHandler", $result[3]);
+        } else {
+            $this->assertRegExp('/^[a-z]+$/', $result[3]);
+        }
+
         $this->assertSame($expectedPath, $router->format($result[3], $result[2]));
     }
 
@@ -187,10 +237,9 @@ class RoutingTest extends TestCase
         $name = 'CompiledDispatcher' . bin2hex(random_bytes(16));
 
         $compiler = new DispatcherCompiler();
-        $temp = tempnam(sys_get_temp_dir(), 'php');
+        $temp = $this->tempFiles[] = tempnam(sys_get_temp_dir(), 'php');
         file_put_contents($temp, $compiler->compile($collector, $name));
         require $temp;
-        unlink($temp);
 
         return new $name();
     }

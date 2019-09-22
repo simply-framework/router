@@ -2,6 +2,8 @@
 
 namespace Simply\Router\Collector;
 
+use Simply\Router\Parser\OptionalParser;
+
 /**
  * RouteCollector.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -13,6 +15,13 @@ class RouteCollector
     /** @var CollectedRoute[] */
     private $routes;
 
+    private $optionalParser;
+
+    public function __construct()
+    {
+        $this->optionalParser = new OptionalParser();
+    }
+
     /**
      * @return CollectedRoute[]
      */
@@ -23,7 +32,10 @@ class RouteCollector
 
     public function request($method, string $path, $handler, string $name = null): self
     {
-        $this->routes[] = new CollectedRoute(\is_array($method) ? $method : [$method], $path, $handler, $name);
+        foreach ($this->optionalParser->parseOptionalPaths($path) as $fork) {
+            $this->routes[] = new CollectedRoute(\is_array($method) ? $method : [$method], $fork, $handler, $name);
+            $name = null;
+        }
 
         return $this;
     }
