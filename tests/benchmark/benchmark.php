@@ -121,15 +121,6 @@ foreach ($sets as ['name' => $name, 'requests' => $requests, 'routes' => $routes
     }, $requests, $runtime);
 
     echo $formatResult('FastRoute', $fastCount, $runtime) . "\n";
-    /*
-        $provider = new RouteDefinitionProvider();
-    
-        foreach ($routes as $key => [$method, $path, $handler]) {
-            $provider->addRouteDefinition(new RouteDefinition("route-$key", [$method], $path, $handler));
-        }
-    
-        $router = new Router($provider);
-    */
 
     $collector = new \Simply\Router\Collector\RouteCollector();
 

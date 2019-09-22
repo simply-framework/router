@@ -130,13 +130,9 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
     {
         if (\count($dynamicSegments) === 1) {
             $condition = $this->compilePatternMatch(key($dynamicSegments), $index);
-            $code = $this->addIndent(current($dynamicSegments));
+            $code = current($dynamicSegments);
 
-            return <<<PHP
-                if ($condition) {
-                    $code
-                }
-                PHP;
+            return $this->compileIf($condition, $code);
         }
 
         $patterns = [];
@@ -148,23 +144,26 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
         }
 
         $combined = $this->combinePatterns($patterns);
+        $switch = $this->compileSwitch("\$match[$index]['MARK']", $cases);
 
         if (\count($combined) === 1) {
             $clause = $this->compilePatternMatch(current($combined), $index);
-        } else {
-            $clauses = [];
-
-            foreach ($combined as $pattern) {
-                $clauses[] = $this->compilePatternMatch($pattern, $index);
-            }
-
-            $clause = sprintf("\n    %s\n", $this->addIndent(implode(" ||\n", $clauses)));
+            return $this->compileIf($clause, $switch);
         }
 
-        $switch = $this->addIndent($this->compileSwitch("\$match[$index]['MARK']", $cases));
+        $clauses = [];
+
+        foreach ($combined as $pattern) {
+            $clauses[] = $this->compilePatternMatch($pattern, $index);
+        }
+
+        $clause = $this->addIndent(implode(" ||\n", $clauses));
+        $switch = $this->addIndent($switch);
 
         return <<<PHP
-                if ($clause) {
+                if (
+                    $clause
+                ) {
                     $switch
                 }
                 PHP;
@@ -234,13 +233,9 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
     {
         if (\count($cases) === 1) {
             $value = $this->encoder->encode(key($cases));
-            $code = $this->addIndent(current($cases));
+            $code = current($cases);
 
-            return <<<PHP
-                if ($condition === $value) {
-                    $code
-                }
-                PHP;
+            return $this->compileIf("$condition === $value", $code);
         }
 
         ksort($cases);
@@ -270,6 +265,22 @@ class SingleRouteDispatcherTemplate implements DispatcherTemplateInterface
         return <<<PHP
             switch ($condition) {
                 $compiledCases
+            }
+            PHP;
+    }
+
+    private function compileIf(string $condition, string $code): string
+    {
+        if (preg_match('/^if \((.+)\) {\n((?:    [^\n]*\n|\n)*)}$/', $code, $match)) {
+            $condition .= " && $match[1]";
+            $code = trim($match[2]);
+        } else {
+            $code = $this->addIndent($code);
+        }
+
+        return <<<PHP
+            if ($condition) {
+                $code
             }
             PHP;
     }
